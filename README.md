@@ -21,11 +21,11 @@ The [COCO2017](http://cocodataset.org/#download) dataset is used. Download it an
 ```shell
 # single-gpu training
 python train.py ${CONFIG_FILE} [--work_dir ${WORK_DIR}] [--resume_from ${CHECKPOINT_FILE}] [--validate] [--autoscale-lr]
-# python train.py configs/faster_rcnn_hrnetv2p_w40_1x.py --validate --autoscale-lr
+# python train.py configs/faster_rcnn_hrnetv2p_w32_1x.py --validate --autoscale-lr
 
 # multi-gpu training
 ./train.sh ${GPU_NUM} ${PORT} ${CONFIG_FILE} [--work_dir ${WORK_DIR}] [--resume_from ${CHECKPOINT_FILE}] [--validate] [--autoscale-lr]
-# ./train.sh 8 29500 configs/faster_rcnn_hrnetv2p_w40_1x.py --validate --autoscale-lr
+# ./train.sh 8 29500 configs/faster_rcnn_hrnetv2p_w32_1x.py --validate --autoscale-lr
 ```
 
 Optional arguments are:
@@ -38,11 +38,11 @@ Optional arguments are:
 ```shell
 # single-gpu testing
 python test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--out ${RESULT_FILE}] [--json_out ${RESULT_JSON_FILE}] [--eval ${EVAL_METRICS}] [--show]
-# python test.py configs/faster_rcnn_hrnetv2p_w40_1x.py checkpoints/faster_rcnn_hrnetv2p_w48_1x_20190820-5c6d0903.pth --json_out results/results --eval bbox
+# python test.py configs/faster_rcnn_hrnetv2p_w32_1x.py checkpoints/faster_rcnn_hrnetv2p_w32_1x_20190522-d22f1fef.pth --json_out results/results
 
 # multi-gpu testing
 ./test.sh ${GPU_NUM} ${PORT} ${CONFIG_FILE} ${CHECKPOINT_FILE} [--out ${RESULT_FILE}] [--json_out ${RESULT_JSON_FILE}] [--eval ${EVAL_METRICS}]
-# ./test.sh 8 29501 configs/faster_rcnn_hrnetv2p_w40_1x.py checkpoints/faster_rcnn_hrnetv2p_w48_1x_20190820-5c6d0903.pth --out results/results.pkl
+# ./test.sh 8 29501 configs/faster_rcnn_hrnetv2p_w32_1x.py checkpoints/faster_rcnn_hrnetv2p_w32_1x_20190522-d22f1fef.pth --out results/results.pkl  --eval bbox
 ```
 
 Optional arguments:
@@ -60,5 +60,5 @@ like `cannot connect to X server`.
 
 |    Backbone     |  Style  | Lr schd | box AP |       Download      |
 | :-------------: | :-----: | :-----: | :----: | :-----------------: |
-|   HRNetV2p-W48   | pytorch |   1x    |  40.9  | [model](https://open-mmlab.s3.ap-northeast-2.amazonaws.com/mmdetection/models/hrnet/faster_rcnn_hrnetv2p_w48_1x_20190820-5c6d0903.pth) |
-|   HRNetV2p-W48   | pytorch |   2x    |  41.5  | [model](https://open-mmlab.s3.ap-northeast-2.amazonaws.com/mmdetection/models/hrnet/faster_rcnn_hrnetv2p_w48_2x_20190820-79fb8bfc.pth) |
+|   HRNetV2p-W32   | pytorch |   1x    |  39.5  | [model](https://open-mmlab.s3.ap-northeast-2.amazonaws.com/mmdetection/models/hrnet/faster_rcnn_hrnetv2p_w32_1x_20190522-d22f1fef.pth) |
+|   HRNetV2p-W32   | pytorch |   2x    |  40.6  | [model](https://open-mmlab.s3.ap-northeast-2.amazonaws.com/mmdetection/models/hrnet/faster_rcnn_hrnetv2p_w32_2x_20190810-24e8912a.pth) |

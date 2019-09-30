@@ -1,7 +1,7 @@
 # model settings
 model = dict(
     type='FasterRCNN',
-    pretrained='open-mmlab://msra/hrnetv2_w40',
+    pretrained='open-mmlab://msra/hrnetv2_w32',
     backbone=dict(
         type='HRNet',
         extra=dict(
@@ -16,22 +16,22 @@ model = dict(
                 num_branches=2,
                 block='BASIC',
                 num_blocks=(4, 4),
-                num_channels=(40, 80)),
+                num_channels=(32, 64)),
             stage3=dict(
                 num_modules=4,
                 num_branches=3,
                 block='BASIC',
                 num_blocks=(4, 4, 4),
-                num_channels=(40, 80, 160)),
+                num_channels=(32, 64, 128)),
             stage4=dict(
                 num_modules=3,
                 num_branches=4,
                 block='BASIC',
                 num_blocks=(4, 4, 4, 4),
-                num_channels=(40, 80, 160, 320)))),
+                num_channels=(32, 64, 128, 256)))),
     neck=dict(
         type='HRFPN',
-        in_channels=[40, 80, 160, 320],
+        in_channels=[32, 64, 128, 256],
         out_channels=256),
     rpn_head=dict(
         type='RPNHead',
@@ -161,8 +161,8 @@ data = dict(
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/image_info_test-dev2017.json',
-        img_prefix=data_root + 'test2017/',
+        ann_file=data_root + 'annotations/instances_val2017.json',
+        img_prefix=data_root + 'val2017/',
         pipeline=test_pipeline))
 # optimizer
 optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
@@ -187,7 +187,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = 'results/faster_rcnn_hrnetv2p_w40_1x'
+work_dir = 'results/faster_rcnn_hrnetv2p_w32_1x'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
