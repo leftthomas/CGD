@@ -1,10 +1,10 @@
 import mmcv
 
 from mmdet.core import bbox_mapping, tensor2imgs
-from .. import builder
-from ..registry import DETECTORS
 from .base import BaseDetector
 from .test_mixins import RPNTestMixin
+from .. import builder
+from ..registry import DETECTORS
 
 
 @DETECTORS.register_module

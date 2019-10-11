@@ -1,5 +1,5 @@
-from ..registry import DETECTORS
 from .single_stage import SingleStageDetector
+from ..registry import DETECTORS
 
 
 @DETECTORS.register_module

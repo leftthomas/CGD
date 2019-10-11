@@ -5,6 +5,7 @@ import os
 
 import torch
 from mmcv import Config
+
 from mmdet import __version__
 from mmdet.apis import (get_root_logger, init_dist, set_random_seed,
                         train_detector)

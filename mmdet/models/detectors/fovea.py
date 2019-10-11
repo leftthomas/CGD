@@ -3,7 +3,7 @@ from ..registry import DETECTORS
 
 
 @DETECTORS.register_module
-class RetinaNet(SingleStageDetector):
+class FOVEA(SingleStageDetector):
 
     def __init__(self,
                  backbone,
@@ -12,5 +12,5 @@ class RetinaNet(SingleStageDetector):
                  train_cfg=None,
                  test_cfg=None,
                  pretrained=None):
-        super(RetinaNet, self).__init__(backbone, neck, bbox_head, train_cfg,
-                                        test_cfg, pretrained)
+        super(FOVEA, self).__init__(backbone, neck, bbox_head, train_cfg,
+                                    test_cfg, pretrained)

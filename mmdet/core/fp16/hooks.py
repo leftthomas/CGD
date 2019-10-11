@@ -4,8 +4,8 @@ import torch
 import torch.nn as nn
 from mmcv.runner import OptimizerHook
 
-from ..utils.dist_utils import allreduce_grads
 from .utils import cast_tensor_type
+from ..utils.dist_utils import allreduce_grads
 
 
 class Fp16OptimizerHook(OptimizerHook):

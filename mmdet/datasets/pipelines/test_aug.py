@@ -1,7 +1,7 @@
 import mmcv
 
-from ..registry import PIPELINES
 from .compose import Compose
+from ..registry import PIPELINES
 
 
 @PIPELINES.register_module

@@ -1,7 +1,7 @@
 import torch
 
-from ..utils import multi_apply
 from .transforms import bbox2delta
+from ..utils import multi_apply
 
 
 def bbox_target(pos_bboxes_list,

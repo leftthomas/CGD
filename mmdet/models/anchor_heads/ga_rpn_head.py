@@ -5,8 +5,8 @@ from mmcv.cnn import normal_init
 
 from mmdet.core import delta2bbox
 from mmdet.ops import nms
-from ..registry import HEADS
 from .guided_anchor_head import GuidedAnchorHead
+from ..registry import HEADS
 
 
 @HEADS.register_module

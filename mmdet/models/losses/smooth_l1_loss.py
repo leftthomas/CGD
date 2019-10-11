@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 
-from ..registry import LOSSES
 from .utils import weighted_loss
+from ..registry import LOSSES
 
 
 @weighted_loss

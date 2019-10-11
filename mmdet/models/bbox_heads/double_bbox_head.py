@@ -1,10 +1,10 @@
 import torch.nn as nn
 from mmcv.cnn.weight_init import normal_init, xavier_init
 
+from .bbox_head import BBoxHead
 from ..backbones.resnet import Bottleneck
 from ..registry import HEADS
 from ..utils import ConvModule
-from .bbox_head import BBoxHead
 
 
 class BasicResBlock(nn.Module):
@@ -71,7 +71,7 @@ class BasicResBlock(nn.Module):
 
 @HEADS.register_module
 class DoubleConvFCBBoxHead(BBoxHead):
-    """Bbox head used in Double-Head R-CNN
+    r"""Bbox head used in Double-Head R-CNN
 
                                       /-> cls
                   /-> shared convs ->

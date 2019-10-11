@@ -1,13 +1,13 @@
 import torch.nn as nn
 
+from .bbox_head import BBoxHead
 from ..registry import HEADS
 from ..utils import ConvModule
-from .bbox_head import BBoxHead
 
 
 @HEADS.register_module
 class ConvFCBBoxHead(BBoxHead):
-    """More general bbox head, with shared conv and fc layers and two optional
+    r"""More general bbox head, with shared conv and fc layers and two optional
     separated branches.
 
                                 /-> cls convs -> cls fcs -> cls
