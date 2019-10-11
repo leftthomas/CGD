@@ -1,5 +1,4 @@
 from __future__ import division
-
 import re
 from collections import OrderedDict
 

@@ -1,8 +1,8 @@
 import torch
 
 from mmdet.core import bbox2result, bbox_mapping_back, multiclass_nms
-from .single_stage import SingleStageDetector
 from ..registry import DETECTORS
+from .single_stage import SingleStageDetector
 
 
 @DETECTORS.register_module

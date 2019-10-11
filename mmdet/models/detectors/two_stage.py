@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 
 from mmdet.core import bbox2result, bbox2roi, build_assigner, build_sampler
-from .base import BaseDetector
-from .test_mixins import BBoxTestMixin, MaskTestMixin, RPNTestMixin
 from .. import builder
 from ..registry import DETECTORS
+from .base import BaseDetector
+from .test_mixins import BBoxTestMixin, MaskTestMixin, RPNTestMixin
 
 
 @DETECTORS.register_module

@@ -283,16 +283,16 @@ class FoveaHead(nn.Module):
             half_h = 0.5 * (gt_bboxes[:, 3] - gt_bboxes[:, 1])
             # valid fovea area: left, right, top, down
             pos_left = torch.ceil(
-                gt_bboxes[:, 0] + (1 - self.sigma) * half_w - 0.5).long(). \
+                gt_bboxes[:, 0] + (1 - self.sigma) * half_w - 0.5).long().\
                 clamp(0, featmap_size[1] - 1)
             pos_right = torch.floor(
-                gt_bboxes[:, 0] + (1 + self.sigma) * half_w - 0.5).long(). \
+                gt_bboxes[:, 0] + (1 + self.sigma) * half_w - 0.5).long().\
                 clamp(0, featmap_size[1] - 1)
             pos_top = torch.ceil(
-                gt_bboxes[:, 1] + (1 - self.sigma) * half_h - 0.5).long(). \
+                gt_bboxes[:, 1] + (1 - self.sigma) * half_h - 0.5).long().\
                 clamp(0, featmap_size[0] - 1)
             pos_down = torch.floor(
-                gt_bboxes[:, 1] + (1 + self.sigma) * half_h - 0.5).long(). \
+                gt_bboxes[:, 1] + (1 + self.sigma) * half_h - 0.5).long().\
                 clamp(0, featmap_size[0] - 1)
             for px1, py1, px2, py2, label, (gt_x1, gt_y1, gt_x2, gt_y2) in \
                     zip(pos_left, pos_top, pos_right, pos_down, gt_labels,
@@ -364,13 +364,13 @@ class FoveaHead(nn.Module):
                 scores = scores[topk_inds, :]
                 y = y[topk_inds]
                 x = x[topk_inds]
-            x1 = (stride * x - base_len * bbox_pred[:, 0]). \
+            x1 = (stride * x - base_len * bbox_pred[:, 0]).\
                 clamp(min=0, max=img_shape[1] - 1)
-            y1 = (stride * y - base_len * bbox_pred[:, 1]). \
+            y1 = (stride * y - base_len * bbox_pred[:, 1]).\
                 clamp(min=0, max=img_shape[0] - 1)
-            x2 = (stride * x + base_len * bbox_pred[:, 2]). \
+            x2 = (stride * x + base_len * bbox_pred[:, 2]).\
                 clamp(min=0, max=img_shape[1] - 1)
-            y2 = (stride * y + base_len * bbox_pred[:, 3]). \
+            y2 = (stride * y + base_len * bbox_pred[:, 3]).\
                 clamp(min=0, max=img_shape[0] - 1)
             bboxes = torch.stack([x1, y1, x2, y2], -1)
             det_bboxes.append(bboxes)
