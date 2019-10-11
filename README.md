@@ -1,12 +1,12 @@
-# AHRNet
-A PyTorch implementation of AHRNet based on CVPR 2019 paper 
-[AHRNet: Attentive High Resolution Network for KeyPoint Detection](https://arxiv.org/abs/1904.11490). 
+# MBPL
+A PyTorch implementation of MBPL based on CVPR 2019 paper 
+[MBPL: Multiple Branches with Progressive Learning for KeyPoint Detection](https://arxiv.org/abs/1904.11490). 
 
 ## Requirements
 - [Anaconda](https://www.anaconda.com/download/)
 - PyTorch
 ```
-conda install pytorch torchvision -c pytorch
+conda install pytorch torchvision cudatoolkit=10.1 -c pytorch
 ```
 - mmdetection
 ```
