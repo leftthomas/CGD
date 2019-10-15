@@ -34,7 +34,7 @@ python train_net.py --config-file <config.yaml>
 For example, to launch end-to-end R-CNN_FPN training with ResNet-50 backbone on 8 GPUs,
 one should execute:
 ```bash
-python train_net.py --config-file configs/keypoint_rcnn_R_50_FPN_1x.yaml --num_gpus 8
+python train_net.py --config-file configs/keypoint_rcnn_R_50_FPN_1x.yaml --num-gpus 8
 ```
 
 ## Evaluation
