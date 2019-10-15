@@ -1,3 +1,4 @@
+
 import torch
 import torch.nn as nn
 from mmcv.cnn import constant_init, normal_init
@@ -7,9 +8,7 @@ from ..utils import ConvModule
 
 class NonLocal2D(nn.Module):
     """Non-local module.
-
     See https://arxiv.org/abs/1711.07971 for details.
-
     Args:
         in_channels (int): Channels of the input feature map.
         reduction (int): Channel reduction ratio.
@@ -76,7 +75,7 @@ class NonLocal2D(nn.Module):
         pairwise_weight = torch.matmul(theta_x, phi_x)
         if self.use_scale:
             # theta_x.shape[-1] is `self.inter_channels`
-            pairwise_weight /= theta_x.shape[-1]**-0.5
+            pairwise_weight /= theta_x.shape[-1]**0.5
         pairwise_weight = pairwise_weight.softmax(dim=-1)
         return pairwise_weight
 
