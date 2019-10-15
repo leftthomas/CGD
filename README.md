@@ -20,56 +20,52 @@ pip install pycocotools
 ```
 pip install git+https://github.com/facebookresearch/fvcore
 ```
-- mmdetection
+- detectron2
 ```
-python setup.py develop
-```
-## Datasets
-The [COCO2017](http://cocodataset.org/#download) dataset is used. Download it and set the path in `configs` directory.
-
-## Usage
-
-### Train
-```shell
-# single-gpu training
-python train.py ${CONFIG_FILE} [--work_dir ${WORK_DIR}] [--resume_from ${CHECKPOINT_FILE}] [--validate] [--autoscale-lr]
-# python train.py configs/mbpl_hrnet_pl.py --validate --autoscale-lr
-
-# multi-gpu training
-./train.sh ${GPU_NUM} ${PORT} ${CONFIG_FILE} [--work_dir ${WORK_DIR}] [--resume_from ${CHECKPOINT_FILE}] [--validate] [--autoscale-lr]
-# ./train.sh 8 29500 configs/mbpl_hrnet_pl.py --validate --autoscale-lr
+pip install git+https://github.com/facebookresearch/detectron2.git@master
 ```
 
-Optional arguments are:
-- `WORK_DIR`: Override the working directory specified in the config file.
-- `CHECKPOINT_FILE`: Resume from a previous checkpoint file.
-- `--validate`: Perform evaluation at every k (default value is 1) epochs during the training.
-- `--autoscale-lr`: Automatically scale lr with the number of gpus.
+## Training
 
-### Test
-```shell
-# single-gpu testing
-python test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--out ${RESULT_FILE}] [--json_out ${RESULT_JSON_FILE}] [--eval ${EVAL_METRICS}] [--show]
-# python test.py configs/mbpl_hrnet_pl.py checkpoints/mbpl_hrnet_pl.pth --json_out results/results
-
-# multi-gpu testing
-./test.sh ${GPU_NUM} ${PORT} ${CONFIG_FILE} ${CHECKPOINT_FILE} [--out ${RESULT_FILE}] [--json_out ${RESULT_JSON_FILE}] [--eval ${EVAL_METRICS}]
-# ./test.sh 8 29501 configs/mbpl_hrnet_pl.py checkpoints/mbpl_hrnet_pl.pth --out results/results.pkl  --eval bbox
+To train a model, run
+```bash
+python train_net.py --config-file <config.yaml>
 ```
 
-Optional arguments:
-- `RESULT_FILE`: Filename of the output results in pickle format. If not specified, the results will not be saved to a file.
-- `RESULT_JSON_FILE`: Filename of the output results without extension in json format. If not specified, the results will 
-not be saved to a file.
-- `EVAL_METRICS`: Items to be evaluated on the results. Allowed values are: `proposal_fast`, `proposal`, `bbox`, `segm`, `keypoints`.
-- `--show`: If specified, detection results will be ploted on the images and shown in a new window. It is only applicable 
-to single GPU testing. Please make sure that GUI is available in your environment, otherwise you may encounter the error 
-like `cannot connect to X server`.
+For example, to launch end-to-end TridentNet training with ResNet-50 backbone on 8 GPUs,
+one should execute:
+```bash
+python train_net.py --config-file configs/tridentnet_fast_R_50_C4_1x.yaml --num_gpus 8
+```
 
-## Results and Models
-|    Backbone     |  Training Style  | box AP |       Download      |
-| :-------------: | :-------------:  | :----: | :-----------------: |
-|   ResNet        | NPL              |  39.5  | [model](https://open-mmlab.s3.ap-northeast-2.amazonaws.com/mbpl_hrnet_pl.pth) |
-|   ResNet        | PL               |  40.6  | [model](https://open-mmlab.s3.ap-northeast-2.amazonaws.com/mbpl_hrnet_pl.pth)
-|   HRNet         | NPL              |  39.5  | [model](https://open-mmlab.s3.ap-northeast-2.amazonaws.com/mbpl_hrnet_pl.pth) |
-|   HRNet         | PL               |  40.6  | [model](https://open-mmlab.s3.ap-northeast-2.amazonaws.com/mbpl_hrnet_pl.pth) |
+## Evaluation
+
+Model evaluation can be done similarly:
+```bash
+python train_net.py --config-file configs/tridentnet_fast_R_50_C4_1x.yaml --eval-only MODEL.WEIGHTS checkpoints/model.pth
+```
+
+## Results on MS-COCO in Detectron2
+
+|Model|Backbone|Head|lr sched|AP|AP50|AP75|APs|APm|APl|
+|-----|--------|----|--------------|--|----|----|---|---|---|
+|Faster|R50-C4|C5-512ROI|1X|35.7|56.1|38.0|19.2|40.9|48.7|
+|TridentFast|R50-C4|C5-128ROI|1X|37.9|57.8|40.7|19.7|42.1|54.2|
+|Faster|R50-C4|C5-512ROI|3X|38.4|58.7|41.3|20.7|42.7|53.1|
+|TridentFast|R50-C4|C5-128ROI|3X|41.0|60.9|44.2|22.7|45.2|57.0|
+|Faster|R101-C4|C5-512ROI|3X|41.1|61.4|44.0|22.2|45.5|55.9|
+|TridentFast|R101-C4|C5-128ROI|3X|43.4|62.9|46.6|24.2|47.9|59.9|
+
+
+## <a name="CitingTridentNet"></a>Citing TridentNet
+
+If you use TridentNet, please use the following BibTeX entry.
+
+```
+@InProceedings{li2019scale,
+  title={Scale-Aware Trident Networks for Object Detection},
+  author={Li, Yanghao and Chen, Yuntao and Wang, Naiyan and Zhang, Zhaoxiang},
+  journal={The International Conference on Computer Vision (ICCV)},
+  year={2019}
+}
+```
