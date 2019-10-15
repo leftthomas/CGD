@@ -1,6 +1,5 @@
-_BASE_: "Base-TridentNet-Fast-C4.yaml"
+_BASE_: "Base-Keypoint-RCNN-FPN.yaml"
 MODEL:
   WEIGHTS: "detectron2://ImageNetPretrained/MSRA/R-50.pkl"
-  MASK_ON: False
   RESNETS:
     DEPTH: 50

@@ -26,7 +26,6 @@ pip install git+https://github.com/facebookresearch/detectron2.git@master
 ```
 
 ## Training
-
 To train a model, run
 ```bash
 python train_net.py --config-file <config.yaml>
@@ -39,26 +38,39 @@ python train_net.py --config-file configs/tridentnet_fast_R_50_C4_1x.yaml --num_
 ```
 
 ## Evaluation
-
 Model evaluation can be done similarly:
 ```bash
 python train_net.py --config-file configs/tridentnet_fast_R_50_C4_1x.yaml --eval-only MODEL.WEIGHTS checkpoints/model.pth
 ```
 
-## Results on MS-COCO in Detectron2
-
-|Model|Backbone|Head|lr sched|AP|AP50|AP75|APs|APm|APl|
-|-----|--------|----|--------------|--|----|----|---|---|---|
-|Faster|R50-C4|C5-512ROI|1X|35.7|56.1|38.0|19.2|40.9|48.7|
-|TridentFast|R50-C4|C5-128ROI|1X|37.9|57.8|40.7|19.7|42.1|54.2|
-|Faster|R50-C4|C5-512ROI|3X|38.4|58.7|41.3|20.7|42.7|53.1|
-|TridentFast|R50-C4|C5-128ROI|3X|41.0|60.9|44.2|22.7|45.2|57.0|
-|Faster|R101-C4|C5-512ROI|3X|41.1|61.4|44.0|22.2|45.5|55.9|
-|TridentFast|R101-C4|C5-128ROI|3X|43.4|62.9|46.6|24.2|47.9|59.9|
-
+## COCO Person Keypoint Detection Baselines with Keypoint R-CNN
+<table><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">lr<br/>sched</th>
+<th valign="bottom">train<br/>time<br/>(s/iter)</th>
+<th valign="bottom">inference<br/>time<br/>(s/im)</th>
+<th valign="bottom">train<br/>mem<br/>(GB)</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">kp.<br/>AP</th>
+<th valign="bottom">model id</th>
+<th valign="bottom">download</th>
+<!-- TABLE BODY -->
+<!-- ROW: keypoint_rcnn_R_50_FPN_1x -->
+ <tr><td align="left"><a href="configs/COCO-Keypoints/keypoint_rcnn_R_50_FPN_1x.yaml">R50-FPN</a></td>
+<td align="center">1x</td>
+<td align="center">0.315</td>
+<td align="center">0.102</td>
+<td align="center">5.0</td>
+<td align="center">53.6</td>
+<td align="center">64.0</td>
+<td align="center">137261548</td>
+<td align="center"><a href="https://dl.fbaipublicfiles.com/detectron2/COCO-Keypoints/keypoint_rcnn_R_50_FPN_1x/137261548/model_final_04e291.pkl">model</a>&nbsp;|&nbsp;<a href="https://dl.fbaipublicfiles.com/detectron2/COCO-Keypoints/keypoint_rcnn_R_50_FPN_1x/137261548/metrics.json">metrics</a></td>
+</tr>
+</tbody></table>
 
 ## <a name="CitingTridentNet"></a>Citing TridentNet
-
 If you use TridentNet, please use the following BibTeX entry.
 
 ```

@@ -13,7 +13,7 @@ from detectron2.config import get_cfg
 from detectron2.engine import DefaultTrainer, default_argument_parser, default_setup, launch
 from detectron2.evaluation import COCOEvaluator, verify_results
 
-from tridentnet import add_tridentnet_config
+from mbpl import add_tridentnet_config
 
 
 class Trainer(DefaultTrainer):
