@@ -8,6 +8,18 @@ A PyTorch implementation of MBPL based on CVPR 2020 paper
 ```
 conda install pytorch torchvision cudatoolkit=10.1 -c pytorch
 ```
+- opencv
+```
+pip install opencv-python
+```
+- pycocotools
+```
+pip install pycocotools
+```
+- fvcore
+```
+pip install git+https://github.com/facebookresearch/fvcore
+```
 - mmdetection
 ```
 python setup.py develop
