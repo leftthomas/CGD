@@ -31,16 +31,16 @@ To train a model, run
 python train_net.py --config-file <config.yaml>
 ```
 
-For example, to launch end-to-end TridentNet training with ResNet-50 backbone on 8 GPUs,
+For example, to launch end-to-end R-CNN_FPN training with ResNet-50 backbone on 8 GPUs,
 one should execute:
 ```bash
-python train_net.py --config-file configs/tridentnet_fast_R_50_C4_1x.yaml --num_gpus 8
+python train_net.py --config-file configs/keypoint_rcnn_R_50_FPN_1x.yaml --num_gpus 8
 ```
 
 ## Evaluation
 Model evaluation can be done similarly:
 ```bash
-python train_net.py --config-file configs/tridentnet_fast_R_50_C4_1x.yaml --eval-only MODEL.WEIGHTS checkpoints/model.pth
+python train_net.py --config-file configs/keypoint_rcnn_R_50_FPN_1x.yaml --eval-only MODEL.WEIGHTS checkpoints/model.pth
 ```
 
 ## COCO Person Keypoint Detection Baselines with Keypoint R-CNN
@@ -58,7 +58,7 @@ python train_net.py --config-file configs/tridentnet_fast_R_50_C4_1x.yaml --eval
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
 <!-- ROW: keypoint_rcnn_R_50_FPN_1x -->
- <tr><td align="left"><a href="configs/COCO-Keypoints/keypoint_rcnn_R_50_FPN_1x.yaml">R50-FPN</a></td>
+ <tr><td align="left"><a href="configs/keypoint_rcnn_R_50_FPN_1x.yaml">R50-FPN</a></td>
 <td align="center">1x</td>
 <td align="center">0.315</td>
 <td align="center">0.102</td>
