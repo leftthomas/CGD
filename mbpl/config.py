@@ -1,12 +1,9 @@
-# -*- coding: utf-8 -*-
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-
 from detectron2.config import CfgNode as CN
 
 
-def add_tridentnet_config(cfg):
+def add_mbpl_config(cfg):
     """
-    Add config for tridentnet.
+    Add config for MBPL.
     """
     _C = cfg
 

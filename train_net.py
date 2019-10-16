@@ -6,7 +6,7 @@ from detectron2.config import get_cfg
 from detectron2.engine import DefaultTrainer, default_argument_parser, default_setup, launch
 from detectron2.evaluation import (COCOEvaluator, verify_results, )
 
-from mbpl import add_tridentnet_config
+from mbpl import add_mbpl_config
 
 
 class Trainer(DefaultTrainer):
@@ -23,7 +23,7 @@ def setup(args):
     Create configs and perform basic setups.
     """
     cfg = get_cfg()
-    add_tridentnet_config(cfg)
+    add_mbpl_config(cfg)
     cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
     cfg.freeze()

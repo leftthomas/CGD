@@ -1,9 +1,3 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-from .config import add_tridentnet_config
-from .trident_backbone import (
-    TridentBottleneckBlock,
-    build_trident_resnet_backbone,
-    make_trident_stage,
-)
+from .config import add_mbpl_config
 from .trident_rcnn import TridentRes5ROIHeads, TridentStandardROIHeads
-from .trident_rpn import TridentRPN
