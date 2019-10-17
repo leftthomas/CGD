@@ -10,4 +10,3 @@ MODEL:
     IN_FEATURES: ["res4"]
   ROI_HEADS:
     IN_FEATURES: ["res4"]
-
