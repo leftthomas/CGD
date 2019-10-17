@@ -10,3 +10,4 @@ MODEL:
     IN_FEATURES: ["res4"]
   ROI_HEADS:
     IN_FEATURES: ["res4"]
+OUTPUT_DIR: "./output/r50_1x"
