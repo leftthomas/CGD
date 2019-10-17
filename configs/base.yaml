@@ -14,8 +14,6 @@ MODEL:
     NUM_FC: 2
     POOLER_RESOLUTION: 7
     SMOOTH_L1_BETA: 0.5  # Keypoint AP degrades (though box AP improves) when using plain L1 loss
-  ROI_MASK_HEAD:
-    NUM_CONV: 4
 DATASETS:
   TRAIN: ("keypoints_coco_2017_train",)
   TEST: ("keypoints_coco_2017_val",)
