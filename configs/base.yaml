@@ -1,6 +1,8 @@
 MODEL:
   META_ARCHITECTURE: "GeneralizedRCNN"
   KEYPOINT_ON: True
+  BACKBONE:
+    FREEZE_AT: 2
   RPN:
     PRE_NMS_TOPK_TRAIN: 2000
     PRE_NMS_TOPK_TEST: 1000
@@ -13,7 +15,12 @@ MODEL:
     NAME: "FastRCNNConvFCHead"
     NUM_FC: 2
     POOLER_RESOLUTION: 7
-    SMOOTH_L1_BETA: 0.5  # Keypoint AP degrades (though box AP improves) when using plain L1 loss
+    SMOOTH_L1_BETA: 0.5
+  ROI_KEYPOINT_HEAD:
+    NAME: "KRCNNConvDeconvUpsampleHead"
+    NUM_KEYPOINTS: 17
+DATALOADER:
+  NUM_WORKERS: 4
 DATASETS:
   TRAIN: ("keypoints_coco_2017_train",)
   TEST: ("keypoints_coco_2017_val",)
