@@ -12,7 +12,4 @@ MODEL:
     IN_FEATURES: ["p2", "p3", "p4", "p5", "p6"]
   ROI_HEADS:
     IN_FEATURES: ["p2", "p3", "p4", "p5"]
-SOLVER:
-  STEPS: (210000, 250000)
-  MAX_ITER: 270000
-OUTPUT_DIR: "./output/r50_fpn_3x"
+OUTPUT_DIR: "./output/r50_fpn"
