@@ -7,7 +7,7 @@ def add_mbpl_config(cfg):
     """
     _C = cfg
 
-    _C.MODEL.TRIDENT = CN()
+    _C.MODEL.MULTIBRANCH = CN()
 
-    # Number of branches for TridentNet.
-    _C.MODEL.TRIDENT.NUM_BRANCH = 3
+    # Out channel for each branch
+    _C.MODEL.MULTIBRANCH.OUT_CHANNELS = 32
