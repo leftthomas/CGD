@@ -12,6 +12,10 @@ conda install pytorch torchvision cudatoolkit=10.1 -c pytorch
 ```
 pip install opencv-python
 ```
+- tensorboard
+```
+pip install tensorboard
+```
 - pycocotools
 ```
 pip install git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI
