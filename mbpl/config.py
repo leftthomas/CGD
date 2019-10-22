@@ -10,4 +10,4 @@ def add_mbpl_config(cfg):
     _C.MODEL.MULTIBRANCH = CN()
 
     # Out channel for each branch
-    _C.MODEL.MULTIBRANCH.OUT_CHANNELS = 32
+    _C.MODEL.MULTIBRANCH.UP_SCALE = 2

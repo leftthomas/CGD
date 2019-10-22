@@ -1,4 +1,4 @@
-from detectron2.layers import Conv2d, ConvTranspose2d, ShapeSpec
+from detectron2.layers import Conv2d, ConvTranspose2d, ShapeSpec, interpolate
 from detectron2.modeling.roi_heads.keypoint_head import ROI_KEYPOINT_HEAD_REGISTRY
 from torch import nn
 from torch.nn import functional as F
@@ -21,25 +21,33 @@ class MultiBranchHead(nn.Module):
         """
         super(MultiBranchHead, self).__init__()
         # fmt: off
+        self.up_scale = cfg.MODEL.MULTIBRANCH.UP_SCALE
         conv_dims = cfg.MODEL.ROI_KEYPOINT_HEAD.CONV_DIMS
         num_keypoints = cfg.MODEL.ROI_KEYPOINT_HEAD.NUM_KEYPOINTS
-        out_channels = cfg.MODEL.MULTIBRANCH.OUT_CHANNELS * num_keypoints
         in_channels = input_shape.channels
         # fmt: on
 
-        self.conv_group = Conv2d(in_channels, out_channels, 3, stride=1, padding=1)
-        in_channels = out_channels
         self.blocks = []
         for idx, layer_channels in enumerate(conv_dims, 1):
-            layer_channels = num_keypoints * layer_channels
-            module = Conv2d(in_channels, layer_channels, 3, stride=1, padding=1, groups=num_keypoints)
-            self.add_module("group_conv_{}".format(idx), module)
+            module = Conv2d(in_channels, layer_channels, 3, stride=1, padding=1)
+            self.add_module("conv_fcn_1_{}".format(idx), module)
             self.blocks.append(module)
-            module = ConvTranspose2d(layer_channels, layer_channels, 4, stride=2, padding=1, groups=num_keypoints)
-            self.add_module("group_deconv_{}".format(idx), module)
+            module = Conv2d(layer_channels, layer_channels, 3, stride=1, padding=1)
+            self.add_module("conv_fcn_2_{}".format(idx), module)
             self.blocks.append(module)
-            in_channels = layer_channels
-        self.score_map = Conv2d(in_channels, num_keypoints, 3, stride=1, padding=1, groups=num_keypoints)
+            module = Conv2d(layer_channels, layer_channels, 3, stride=1, padding=1)
+            self.add_module("conv_fcn_3_{}".format(idx), module)
+            self.blocks.append(module)
+            if idx < len(conv_dims):
+                module = ConvTranspose2d(layer_channels, layer_channels, 4, stride=2, padding=1)
+                self.add_module("conv_dcn_{}".format(idx), module)
+                self.blocks.append(module)
+                in_channels = layer_channels
+            else:
+                module = ConvTranspose2d(layer_channels, num_keypoints, 4, stride=2, padding=1)
+                self.add_module("conv_dcn_{}".format(idx), module)
+                self.blocks.append(module)
+                in_channels = num_keypoints
 
         for name, param in self.named_parameters():
             if "bias" in name:
@@ -48,8 +56,10 @@ class MultiBranchHead(nn.Module):
                 nn.init.kaiming_normal_(param, mode="fan_out", nonlinearity="relu")
 
     def forward(self, x):
-        x = self.conv_group(x)
-        for layer in self.blocks:
-            x = F.relu(layer(x))
-        x = self.score_map(x)
+        for idx, layer in enumerate(self.blocks, 1):
+            if idx < len(self.blocks):
+                x = F.relu(layer(x))
+            else:
+                x = layer(x)
+        x = interpolate(x, scale_factor=self.up_scale, mode="bilinear", align_corners=False)
         return x
