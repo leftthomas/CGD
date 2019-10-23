@@ -1,4 +1,4 @@
-from detectron2.layers import Conv2d, ConvTranspose2d, ShapeSpec, interpolate
+from detectron2.layers import Conv2d, ConvTranspose2d, ShapeSpec
 from detectron2.modeling.roi_heads.keypoint_head import ROI_KEYPOINT_HEAD_REGISTRY
 from torch import nn
 from torch.nn import functional as F
@@ -61,5 +61,4 @@ class MultiBranchHead(nn.Module):
                 x = F.relu(layer(x))
             else:
                 x = layer(x)
-        x = interpolate(x, scale_factor=self.up_scale, mode="bilinear", align_corners=False)
         return x
