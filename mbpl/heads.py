@@ -1,4 +1,4 @@
-from detectron2.layers import Conv2d, ConvTranspose2d, ShapeSpec
+from detectron2.layers import Conv2d, ConvTranspose2d, ShapeSpec, interpolate
 from detectron2.modeling.roi_heads.keypoint_head import ROI_KEYPOINT_HEAD_REGISTRY
 from torch import nn
 from torch.nn import functional as F
@@ -44,7 +44,7 @@ class MultiBranchHead(nn.Module):
                 self.blocks.append(module)
                 in_channels = layer_channels
             else:
-                module = ConvTranspose2d(layer_channels, num_keypoints, 4, stride=2, padding=1)
+                module = ConvTranspose2d(layer_channels, num_keypoints, 3, stride=1, padding=1)
                 self.add_module("conv_dcn_{}".format(idx), module)
                 self.blocks.append(module)
                 in_channels = num_keypoints
@@ -61,4 +61,5 @@ class MultiBranchHead(nn.Module):
                 x = F.relu(layer(x))
             else:
                 x = layer(x)
+        x = interpolate(x, scale_factor=self.up_scale, mode="bilinear", align_corners=False)
         return x
