@@ -1,5 +1,6 @@
 import argparse
 import os
+import warnings
 
 import pandas as pd
 import torch
@@ -14,6 +15,8 @@ from tqdm import tqdm
 
 from model import Model
 from utils import train_transform, val_transform, assign_meta_id
+
+warnings.filterwarnings("ignore")
 
 
 def train(net, optim):
