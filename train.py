@@ -30,8 +30,8 @@ def train(net, optim):
         n_data += len(labels)
         l_data += loss.item() * len(labels)
         t_data += torch.sum((pred.cpu() == labels).float()).item() / ENSEMBLE_SIZE
-        train_progress.set_description(
-            'Epoch {}/{} - Loss:{:.4f} - Acc:{:.2f}%'.format(epoch, NUM_EPOCHS, l_data / n_data, t_data / n_data * 100))
+        train_progress.set_description('Epoch {}/{} - Training Loss:{:.4f} - Training Acc:{:.2f}%'
+                                       .format(epoch, NUM_EPOCHS, l_data / n_data, t_data / n_data * 100))
 
     return l_data / n_data, t_data / n_data * 100
 
@@ -52,7 +52,7 @@ def val(net):
             idx = sim_matrix.argsort(dim=-1, descending=True)
             t_top1_data += (torch.sum((idx[:, 0:1] == labels.unsqueeze(dim=-1)).any(dim=-1).float())).item()
             t_top5_data += (torch.sum((idx[:, 0:5] == labels.unsqueeze(dim=-1)).any(dim=-1).float())).item()
-            val_progress.set_description('Epoch {}/{} - Loss:{:.4f} - Acc@1:{:.2f}% - Acc@5:{:.2f}%'
+            val_progress.set_description('Epoch {}/{} - Val Loss:{:.4f} - Val Acc@1:{:.2f}% - Val Acc@5:{:.2f}%'
                                          .format(epoch, NUM_EPOCHS, l_data / n_data, t_top1_data / n_data * 100,
                                                  t_top5_data / n_data * 100))
 
