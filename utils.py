@@ -8,9 +8,11 @@ from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
 
-# TODO
-rgb_mean, rgb_std = [0.4853, 0.4965, 0.4295], [0.2237, 0.2193, 0.2568]
-data_path = '/home/data/uisee'
+normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+train_transform = transforms.Compose(
+    [transforms.RandomResizedCrop(224), transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize])
+val_transform = transforms.Compose(
+    [transforms.Resize(256), transforms.CenterCrop(224), transforms.ToTensor(), normalize])
 
 
 # random assign meta class for all classes
