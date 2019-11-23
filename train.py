@@ -65,7 +65,7 @@ if __name__ == '__main__':
     parser.add_argument('--with_random', action='store_true', help='with branch random weight or not')
     parser.add_argument('--load_ids', action='store_true', help='load already generated ids or not')
     parser.add_argument('--batch_size', default=256, type=int, help='train batch size')
-    parser.add_argument('--num_epochs', default=100, type=int, help='train epoch number')
+    parser.add_argument('--num_epochs', default=50, type=int, help='train epoch number')
     parser.add_argument('--ensemble_size', default=12, type=int, help='ensemble model size')
     parser.add_argument('--meta_class_size', default=32, type=int, help='meta class size')
     parser.add_argument('--gpu_ids', default='0,1,2,3,4,5,6,7', type=str, help='selected gpu')
@@ -84,7 +84,7 @@ if __name__ == '__main__':
 
     model = DataParallel(Model(META_CLASS_SIZE, ENSEMBLE_SIZE, WITH_RANDOM).to(device_ids[0]), device_ids=device_ids)
     print("# trainable parameters:", sum(param.numel() if param.requires_grad else 0 for param in model.parameters()))
-    optimizer = Adam(model.parameters(), lr=1e-4)
+    optimizer = Adam(model.parameters(), lr=1e-3)
     lr_scheduler = MultiStepLR(optimizer, milestones=[int(NUM_EPOCHS * 0.5), int(NUM_EPOCHS * 0.7)], gamma=0.1)
     cel_criterion = CrossEntropyLoss()
 
