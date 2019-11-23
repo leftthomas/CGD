@@ -47,8 +47,8 @@ def val(net):
             n_data += len(labels)
             l_data += loss.item() * len(labels)
             out = F.normalize(out, dim=-1)
-            sim_matrix = torch.bmm(out.cpu()[:, None, :, None, :], one_hot_meta_ids[None, :, :, :, None]).squeeze(
-                dim=-1).mean(dim=-1)
+            sim_matrix = (out.cpu()[:, None, :, None, :] @ one_hot_meta_ids[None, :, :, :, None]).squeeze(
+                dim=-1).squeeze(dim=-1).mean(dim=-1)
             idx = sim_matrix.argsort(dim=-1, descending=True)
             t_top1_data += (torch.sum((idx[:, 0:1] == labels.unsqueeze(dim=-1)).any(dim=-1).float())).item()
             t_top5_data += (torch.sum((idx[:, 0:5] == labels.unsqueeze(dim=-1)).any(dim=-1).float())).item()
