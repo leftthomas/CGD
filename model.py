@@ -16,7 +16,7 @@ class Model(nn.Module):
         self.ensemble_size, self.with_random = ensemble_size, with_random
 
         # common features
-        self.public_extractor, basic_model = [], backbone(pretrained=False)
+        self.public_extractor, basic_model = [], backbone(pretrained=True)
         common_module_names = module_names[:module_names.index('layer1') + 1]
         for name, module in basic_model.named_children():
             if name in common_module_names:
@@ -26,7 +26,7 @@ class Model(nn.Module):
         # individual features
         self.learners, individual_module_names = [], module_names[module_names.index('layer1') + 1:]
         for i in range(ensemble_size):
-            learner, basic_model = [], backbone(pretrained=False)
+            learner, basic_model = [], backbone(pretrained=True)
             for name, module in basic_model.named_children():
                 if name in individual_module_names:
                     learner.append(module)
