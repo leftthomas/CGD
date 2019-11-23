@@ -3,6 +3,7 @@ import os
 
 import pandas as pd
 import torch
+import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss
 from torch.nn import DataParallel
 from torch.optim import Adam
@@ -38,19 +39,24 @@ def train(net, optim):
 def val(net):
     net.eval()
     with torch.no_grad():
-        l_data, t_data, n_data, val_progress = 0, 0, 0, tqdm(val_data_loader)
+        l_data, t_top1_data, t_top5_data, n_data, val_progress = 0, 0, 0, 0, tqdm(val_data_loader)
         for inputs, labels in val_progress:
             out = net(inputs.to(device_ids[0]))
-            loss = cel_criterion(out.permute(0, 2, 1).contiguous(), labels.to(device_ids[0]))
-            pred = torch.argmax(out, dim=-1)
+            meta_labels = meta_ids[labels]
+            loss = cel_criterion(out.permute(0, 2, 1).contiguous(), meta_labels.to(device_ids[0]))
             n_data += len(labels)
             l_data += loss.item() * len(labels)
-            t_data += torch.sum((pred.cpu() == labels).float()).item() / ENSEMBLE_SIZE
-            val_progress.set_description(
-                'Epoch {}/{} - Loss:{:.4f} - Acc:{:.2f}%'.format(epoch, NUM_EPOCHS, l_data / n_data,
-                                                                 t_data / n_data * 100))
+            out = F.normalize(out, dim=-1)
+            sim_matrix = torch.bmm(out.cpu()[:, None, :, None, :], one_hot_meta_ids[None, :, :, :, None]).squeeze(
+                dim=-1).mean(dim=-1)
+            idx = sim_matrix.argsort(dim=-1, descending=True)
+            t_top1_data += (torch.sum((idx[:, 0:1] == labels.unsqueeze(dim=-1)).any(dim=-1).float())).item()
+            t_top5_data += (torch.sum((idx[:, 0:5] == labels.unsqueeze(dim=-1)).any(dim=-1).float())).item()
+            val_progress.set_description('Epoch {}/{} - Loss:{:.4f} - Acc@1:{:.2f}% - Acc@5:{:.2f}%'
+                                         .format(epoch, NUM_EPOCHS, l_data / n_data, t_top1_data / n_data * 100,
+                                                 t_top5_data / n_data * 100))
 
-    return l_data / n_data, t_data / n_data * 100
+    return l_data / n_data, t_top1_data / n_data * 100, t_top5_data / n_data * 100
 
 
 if __name__ == '__main__':
@@ -93,7 +99,8 @@ if __name__ == '__main__':
         meta_ids = assign_meta_id(META_CLASS_SIZE, len(train_data_set.classes), ENSEMBLE_SIZE)
         torch.save(meta_ids, ids_name)
     meta_ids = torch.tensor(meta_ids)
-    results = {'train_loss': [], 'train_accuracy': [], 'val_loss': [], 'val_accuracy': []}
+    one_hot_meta_ids = F.one_hot(meta_ids, num_classes=META_CLASS_SIZE).float()
+    results = {'train_loss': [], 'train_accuracy': [], 'val_loss': [], 'val_top1_accuracy': [], 'val_top5_accuracy': []}
 
     best_acc = 0
     for epoch in range(1, NUM_EPOCHS + 1):
@@ -101,12 +108,13 @@ if __name__ == '__main__':
         results['train_loss'].append(train_loss)
         results['train_accuracy'].append(train_accuracy)
         lr_scheduler.step(epoch)
-        val_loss, val_accuracy = val(model)
+        val_loss, val_top1_accuracy, val_top5_accuracy = val(model)
         results['val_loss'].append(val_loss)
-        results['val_accuracy'].append(val_accuracy)
+        results['val_top1_accuracy'].append(val_top1_accuracy)
+        results['val_top5_accuracy'].append(val_top5_accuracy)
         # save statistics
         data_frame = pd.DataFrame(data=results, index=range(1, epoch + 1))
         data_frame.to_csv('results/{}_results.csv'.format(save_name_pre), index_label='epoch')
-        if val_accuracy > best_acc:
-            best_acc = val_accuracy
+        if val_top1_accuracy > best_acc:
+            best_acc = val_top1_accuracy
             torch.save(model.module.state_dict(), 'epochs/{}_model.pth'.format(save_name_pre))
