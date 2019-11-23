@@ -1,4 +1,5 @@
 import argparse
+import os
 
 import pandas as pd
 import torch
@@ -11,7 +12,7 @@ from torchvision.datasets import ImageFolder
 from tqdm import tqdm
 
 from model import Model
-from utils import train_transform, val_transform
+from utils import train_transform, val_transform, assign_meta_id
 
 
 def train(net, optim):
@@ -20,6 +21,7 @@ def train(net, optim):
     for inputs, labels in train_progress:
         optim.zero_grad()
         out = net(inputs.to(device_ids[0]))
+        labels = meta_ids[labels]
         loss = cel_criterion(out.permute(0, 2, 1).contiguous(), labels.to(device_ids[0]))
         loss.backward()
         optim.step()
@@ -29,8 +31,26 @@ def train(net, optim):
         t_data += torch.sum((pred.cpu() == labels).float()).item() / ENSEMBLE_SIZE
         train_progress.set_description(
             'Epoch {}/{} - Loss:{:.4f} - Acc:{:.2f}%'.format(epoch, NUM_EPOCHS, l_data / n_data, t_data / n_data * 100))
-    results['train_loss'].append(l_data / n_data)
-    results['train_accuracy'].append(t_data / n_data * 100)
+
+    return l_data / n_data, t_data / n_data * 100
+
+
+def val(net):
+    net.eval()
+    with torch.no_grad():
+        l_data, t_data, n_data, val_progress = 0, 0, 0, tqdm(val_data_loader)
+        for inputs, labels in val_progress:
+            out = net(inputs.to(device_ids[0]))
+            loss = cel_criterion(out.permute(0, 2, 1).contiguous(), labels.to(device_ids[0]))
+            pred = torch.argmax(out, dim=-1)
+            n_data += len(labels)
+            l_data += loss.item() * len(labels)
+            t_data += torch.sum((pred.cpu() == labels).float()).item() / ENSEMBLE_SIZE
+            val_progress.set_description(
+                'Epoch {}/{} - Loss:{:.4f} - Acc:{:.2f}%'.format(epoch, NUM_EPOCHS, l_data / n_data,
+                                                                 t_data / n_data * 100))
+
+    return l_data / n_data, t_data / n_data * 100
 
 
 if __name__ == '__main__':
@@ -63,11 +83,30 @@ if __name__ == '__main__':
     cel_criterion = CrossEntropyLoss()
 
     save_name_pre = '{}_{}_{}'.format(random_flag, ENSEMBLE_SIZE, META_CLASS_SIZE)
+    ids_name = 'results/{}_{}_ids.pth'.format(ENSEMBLE_SIZE, META_CLASS_SIZE)
+    if LOAD_IDS:
+        if os.path.exists(ids_name):
+            meta_ids = torch.load(ids_name)
+        else:
+            raise FileNotFoundError('{} is not exist'.format(ids_name))
+    else:
+        meta_ids = assign_meta_id(META_CLASS_SIZE, len(train_data_set.classes), ENSEMBLE_SIZE)
+        torch.save(meta_ids, ids_name)
+    meta_ids = torch.tensor(meta_ids)
     results = {'train_loss': [], 'train_accuracy': [], 'val_loss': [], 'val_accuracy': []}
 
+    best_acc = 0
     for epoch in range(1, NUM_EPOCHS + 1):
-        train(model, optimizer)
+        train_loss, train_accuracy = train(model, optimizer)
+        results['train_loss'].append(train_loss)
+        results['train_accuracy'].append(train_accuracy)
         lr_scheduler.step(epoch)
+        val_loss, val_accuracy = val(model)
+        results['val_loss'].append(val_loss)
+        results['val_accuracy'].append(val_accuracy)
         # save statistics
         data_frame = pd.DataFrame(data=results, index=range(1, epoch + 1))
         data_frame.to_csv('results/{}_results.csv'.format(save_name_pre), index_label='epoch')
+        if val_accuracy > best_acc:
+            best_acc = val_accuracy
+            torch.save(model.module.state_dict(), 'epochs/{}_model.pth'.format(save_name_pre))
