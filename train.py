@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
     model = DataParallel(Model(META_CLASS_SIZE, ENSEMBLE_SIZE, WITH_RANDOM).to(device_ids[0]), device_ids=device_ids)
     print("# trainable parameters:", sum(param.numel() if param.requires_grad else 0 for param in model.parameters()))
-    optimizer = Adam(model.parameters(), lr=1e-3)
+    optimizer = Adam(model.parameters(), lr=1e-4)
     lr_scheduler = MultiStepLR(optimizer, milestones=[int(NUM_EPOCHS * 0.5), int(NUM_EPOCHS * 0.7)], gamma=0.1)
     cel_criterion = CrossEntropyLoss()
 
