@@ -50,7 +50,7 @@ def val(net):
             n_data += len(labels)
             l_data += loss.item() * len(labels)
             out = F.normalize(out, dim=-1)
-            sim_matrix = (out.cpu()[:, None, :, None, :] @ one_hot_meta_ids[None, :, :, :, None]).squeeze(
+            sim_matrix = (out.cpu()[:, None, :, None, :] @ meta_vectors[None, :, :, :, None]).squeeze(
                 dim=-1).squeeze(dim=-1).mean(dim=-1)
             idx = sim_matrix.argsort(dim=-1, descending=True)
             t_top1_data += (torch.sum((idx[:, 0:1] == labels.unsqueeze(dim=-1)).any(dim=-1).float())).item()
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     parser.add_argument('--with_random', action='store_true', help='with branch random weight or not')
     parser.add_argument('--load_ids', action='store_true', help='load already generated ids or not')
     parser.add_argument('--batch_size', default=256, type=int, help='train batch size')
-    parser.add_argument('--num_epochs', default=50, type=int, help='train epoch number')
+    parser.add_argument('--num_epochs', default=40, type=int, help='train epoch number')
     parser.add_argument('--ensemble_size', default=12, type=int, help='ensemble model size')
     parser.add_argument('--meta_class_size', default=32, type=int, help='meta class size')
     parser.add_argument('--gpu_ids', default='0,1,2,3,4,5,6,7', type=str, help='selected gpu')
@@ -102,7 +102,8 @@ if __name__ == '__main__':
         meta_ids = assign_meta_id(META_CLASS_SIZE, len(train_data_set.classes), ENSEMBLE_SIZE)
         torch.save(meta_ids, ids_name)
     meta_ids = torch.tensor(meta_ids)
-    one_hot_meta_ids = F.one_hot(meta_ids, num_classes=META_CLASS_SIZE).float()
+    meta_vectors = torch.zeros(len(train_data_set.classes), ENSEMBLE_SIZE, META_CLASS_SIZE)
+    vector_nums = torch.zeros(len(train_data_set.classes))
     results = {'train_loss': [], 'train_accuracy': [], 'val_loss': [], 'val_top1_accuracy': [], 'val_top5_accuracy': []}
 
     best_acc = 0
