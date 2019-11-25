@@ -23,8 +23,12 @@ def train(net, optim):
     net.train()
     l_data, t_data, n_data, train_progress = 0, 0, 0, tqdm(train_data_loader)
     for inputs, labels in train_progress:
+        for index in labels:
+            vector_nums[index] += 1
         optim.zero_grad()
         out = net(inputs.to(device_ids[0]))
+        for i, vector in enumerate(out.detach().cpu()):
+            meta_vectors[labels[i]] += F.normalize(vector, dim=-1)
         labels = meta_ids[labels]
         loss = cel_criterion(out.permute(0, 2, 1).contiguous(), labels.to(device_ids[0]))
         loss.backward()
@@ -102,16 +106,18 @@ if __name__ == '__main__':
         meta_ids = assign_meta_id(META_CLASS_SIZE, len(train_data_set.classes), ENSEMBLE_SIZE)
         torch.save(meta_ids, ids_name)
     meta_ids = torch.tensor(meta_ids)
-    meta_vectors = torch.zeros(len(train_data_set.classes), ENSEMBLE_SIZE, META_CLASS_SIZE)
-    vector_nums = torch.zeros(len(train_data_set.classes))
     results = {'train_loss': [], 'train_accuracy': [], 'val_loss': [], 'val_top1_accuracy': [], 'val_top5_accuracy': []}
 
     best_acc = 0
     for epoch in range(1, NUM_EPOCHS + 1):
+        meta_vectors = torch.zeros(len(train_data_set.classes), ENSEMBLE_SIZE, META_CLASS_SIZE)
+        vector_nums = torch.zeros(len(train_data_set.classes))
         train_loss, train_accuracy = train(model, optimizer)
+        meta_vectors /= vector_nums.unsqueeze(-1).unsqueeze(-1)
         results['train_loss'].append(train_loss)
         results['train_accuracy'].append(train_accuracy)
         lr_scheduler.step(epoch)
+
         val_loss, val_top1_accuracy, val_top5_accuracy = val(model)
         results['val_loss'].append(val_loss)
         results['val_top1_accuracy'].append(val_top1_accuracy)
