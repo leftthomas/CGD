@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision.models.resnet import resnet18
+from torchvision.models.resnet import resnext50_32x4d
 
 
 class Model(nn.Module):
@@ -9,7 +9,7 @@ class Model(nn.Module):
         super(Model, self).__init__()
 
         # backbone
-        backbone, expansion = resnet18, 1
+        backbone, expansion = resnext50_32x4d, 4
         module_names = ['conv1', 'bn1', 'relu', 'maxpool', 'layer1', 'layer2', 'layer3', 'layer4']
 
         # configs

@@ -29,14 +29,14 @@ def train(net, optim):
         out = net(inputs.to(device_ids[0]))
         for i, vector in enumerate(out.detach().cpu()):
             meta_vectors[labels[i]] += F.normalize(vector, dim=-1)
-        labels = meta_ids[labels]
-        loss = cel_criterion(out.permute(0, 2, 1).contiguous(), labels.to(device_ids[0]))
+        meta_labels = meta_ids[labels]
+        loss = cel_criterion(out.permute(0, 2, 1).contiguous(), meta_labels.to(device_ids[0]))
         loss.backward()
         optim.step()
         pred = torch.argmax(out, dim=-1)
         n_data += len(labels)
         l_data += loss.item() * len(labels)
-        t_data += torch.sum((pred.cpu() == labels).float()).item() / ENSEMBLE_SIZE
+        t_data += torch.sum((pred.cpu() == meta_labels).float()).item() / ENSEMBLE_SIZE
         train_progress.set_description('Epoch {}/{} - Training Loss:{:.4f} - Training Acc:{:.2f}%'
                                        .format(epoch, NUM_EPOCHS, l_data / n_data, t_data / n_data * 100))
 
