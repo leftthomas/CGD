@@ -4,7 +4,6 @@ import warnings
 
 import pandas as pd
 import torch
-import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss
 from torch.nn import DataParallel
 from torch.optim import Adam
@@ -21,49 +20,59 @@ warnings.filterwarnings("ignore")
 
 def train(net, optim):
     net.train()
-    l_data, t_data, n_data, train_progress = 0, 0, 0, tqdm(train_data_loader)
+    meta_loss_data, class_loss_data, meta_true_data, class_true_data, n_data, train_progress = 0, 0, 0, 0, 0, tqdm(
+        train_data_loader)
     for inputs, labels in train_progress:
-        for index in labels:
-            vector_nums[index] += 1
         optim.zero_grad()
-        out = net(inputs.to(device_ids[0]))
-        for i, vector in enumerate(out.detach().cpu()):
-            meta_vectors[labels[i]] += F.normalize(vector, dim=-1)
+        out_features, out_class = net(inputs.to(device_ids[0]))
         meta_labels = meta_ids[labels]
-        loss = cel_criterion(out.permute(0, 2, 1).contiguous(), meta_labels.to(device_ids[0]))
+        meta_loss = cel_criterion(out_features.permute(0, 2, 1).contiguous(), meta_labels.to(device_ids[0]))
+        class_loss = cel_criterion(out_class, labels.to(device_ids[0]))
+        loss = meta_loss + class_loss
         loss.backward()
         optim.step()
-        pred = torch.argmax(out, dim=-1)
+        meta_pred = torch.argmax(out_features, dim=-1)
+        class_pred = torch.argmax(out_class, dim=-1)
         n_data += len(labels)
-        l_data += loss.item() * len(labels)
-        t_data += torch.sum((pred.cpu() == meta_labels).float()).item() / ENSEMBLE_SIZE
-        train_progress.set_description('Epoch {}/{} - Training Loss:{:.4f} - Training Acc:{:.2f}%'
-                                       .format(epoch, NUM_EPOCHS, l_data / n_data, t_data / n_data * 100))
+        meta_loss_data += meta_loss.item() * len(labels)
+        class_loss_data += class_loss.item() * len(labels)
+        meta_true_data += torch.sum((meta_pred.cpu() == meta_labels).float()).item() / ENSEMBLE_SIZE
+        class_true_data += torch.sum((class_pred.cpu() == labels).float()).item()
+        train_progress.set_description('Epoch {}/{} - Training Meta Loss:{:.4f} - Training Class Loss:{:.4f} - '
+                                       'Training Loss:{:.4f} - Training Meta Acc:{:.2f}% - Training Class Acc:{:.2f}%'
+                                       .format(epoch, NUM_EPOCHS, meta_loss_data / n_data, class_loss_data /
+                                               n_data, (meta_loss_data + class_loss_data) / n_data, meta_true_data
+                                               / n_data * 100, class_true_data / n_data * 100))
 
-    return l_data / n_data, t_data / n_data * 100
+    return meta_loss_data / n_data, class_loss_data / n_data, (meta_loss_data + class_loss_data) / n_data, \
+           meta_true_data / n_data * 100, class_true_data / n_data * 100
 
 
 def val(net):
     net.eval()
     with torch.no_grad():
-        l_data, t_top1_data, t_top5_data, n_data, val_progress = 0, 0, 0, 0, tqdm(val_data_loader)
+        meta_loss_data, class_loss_data, t_top1_data, t_top5_data, n_data, val_progress = 0, 0, 0, 0, 0, tqdm(
+            val_data_loader)
         for inputs, labels in val_progress:
-            out = net(inputs.to(device_ids[0]))
+            out_features, out_class = net(inputs.to(device_ids[0]))
             meta_labels = meta_ids[labels]
-            loss = cel_criterion(out.permute(0, 2, 1).contiguous(), meta_labels.to(device_ids[0]))
+            meta_loss = cel_criterion(out_features.permute(0, 2, 1).contiguous(), meta_labels.to(device_ids[0]))
+            class_loss = cel_criterion(out_class, labels.to(device_ids[0]))
             n_data += len(labels)
-            l_data += loss.item() * len(labels)
-            out = F.normalize(out, dim=-1)
-            sim_matrix = (out.cpu()[:, None, :, None, :] @ meta_vectors[None, :, :, :, None]).squeeze(
-                dim=-1).squeeze(dim=-1).mean(dim=-1)
-            idx = sim_matrix.argsort(dim=-1, descending=True)
-            t_top1_data += (torch.sum((idx[:, 0:1] == labels.unsqueeze(dim=-1)).any(dim=-1).float())).item()
-            t_top5_data += (torch.sum((idx[:, 0:5] == labels.unsqueeze(dim=-1)).any(dim=-1).float())).item()
-            val_progress.set_description('Epoch {}/{} - Val Loss:{:.4f} - Val Acc@1:{:.2f}% - Val Acc@5:{:.2f}%'
-                                         .format(epoch, NUM_EPOCHS, l_data / n_data, t_top1_data / n_data * 100,
-                                                 t_top5_data / n_data * 100))
+            meta_loss_data += meta_loss.item() * len(labels)
+            class_loss_data += class_loss.item() * len(labels)
+            t_top1_data += (torch.topk(out_class, k=1, dim=-1)[1] == labels.unsqueeze(dim=-1)).any(
+                dim=-1).float().item()
+            t_top5_data += (torch.topk(out_class, k=5, dim=-1)[1] == labels.unsqueeze(dim=-1)).any(
+                dim=-1).float().item()
+            val_progress.set_description('Epoch {}/{} - Val Meta Loss:{:.4f} - Val Class Loss:{:.4f} - '
+                                         'Val Loss:{:.4f} - Val Acc@1:{:.2f}% - Val Acc@5:{:.2f}%'
+                                         .format(epoch, NUM_EPOCHS, meta_loss_data / n_data, class_loss_data /
+                                                 n_data, (meta_loss_data + class_loss_data) / n_data, t_top1_data
+                                                 / n_data * 100, t_top5_data / n_data * 100))
 
-    return l_data / n_data, t_top1_data / n_data * 100, t_top5_data / n_data * 100
+    return meta_loss_data / n_data, class_loss_data / n_data, (meta_loss_data + class_loss_data) / n_data, \
+           t_top1_data / n_data * 100, t_top5_data / n_data * 100
 
 
 if __name__ == '__main__':
@@ -71,7 +80,7 @@ if __name__ == '__main__':
     parser.add_argument('--data_path', default='/home/data/imagenet/ILSVRC2012', type=str, help='path to dataset')
     parser.add_argument('--with_random', action='store_true', help='with branch random weight or not')
     parser.add_argument('--load_ids', action='store_true', help='load already generated ids or not')
-    parser.add_argument('--batch_size', default=256, type=int, help='train batch size')
+    parser.add_argument('--batch_size', default=1024, type=int, help='train batch size')
     parser.add_argument('--num_epochs', default=40, type=int, help='train epoch number')
     parser.add_argument('--ensemble_size', default=12, type=int, help='ensemble model size')
     parser.add_argument('--meta_class_size', default=32, type=int, help='meta class size')
@@ -89,7 +98,9 @@ if __name__ == '__main__':
     val_data_set = ImageFolder(root='{}/{}'.format(DATA_PATH, 'val'), transform=val_transform)
     val_data_loader = DataLoader(val_data_set, BATCH_SIZE, shuffle=False, num_workers=8, pin_memory=True)
 
-    model = DataParallel(Model(META_CLASS_SIZE, ENSEMBLE_SIZE, WITH_RANDOM).to(device_ids[0]), device_ids=device_ids)
+    model = DataParallel(
+        Model(META_CLASS_SIZE, ENSEMBLE_SIZE, len(train_data_set.classes), WITH_RANDOM).to(device_ids[0]),
+        device_ids=device_ids)
     print("# trainable parameters:", sum(param.numel() if param.requires_grad else 0 for param in model.parameters()))
     optimizer = Adam(model.parameters(), lr=1e-4)
     lr_scheduler = MultiStepLR(optimizer, milestones=[int(NUM_EPOCHS * 0.5), int(NUM_EPOCHS * 0.7)], gamma=0.1)
@@ -106,19 +117,25 @@ if __name__ == '__main__':
         meta_ids = assign_meta_id(META_CLASS_SIZE, len(train_data_set.classes), ENSEMBLE_SIZE)
         torch.save(meta_ids, ids_name)
     meta_ids = torch.tensor(meta_ids)
-    results = {'train_loss': [], 'train_accuracy': [], 'val_loss': [], 'val_top1_accuracy': [], 'val_top5_accuracy': []}
+    results = {'train_meta_loss': [], 'train_class_loss': [], 'train_loss': [], 'train_meta_accuracy': [],
+               'train_class_accuracy': [],
+               'val_meta_loss': [], 'val_class_loss': [], 'val_loss': [], 'val_top1_accuracy': [],
+               'val_top5_accuracy': []}
 
     best_acc = 0
     for epoch in range(1, NUM_EPOCHS + 1):
-        meta_vectors = torch.zeros(len(train_data_set.classes), ENSEMBLE_SIZE, META_CLASS_SIZE)
-        vector_nums = torch.zeros(len(train_data_set.classes))
-        train_loss, train_accuracy = train(model, optimizer)
-        meta_vectors /= vector_nums.unsqueeze(-1).unsqueeze(-1)
+        train_meta_loss, train_class_loss, train_loss, train_meta_accuracy, train_class_accuracy = train(model,
+                                                                                                         optimizer)
+        results['train_meta_loss'].append(train_meta_loss)
+        results['train_class_loss'].append(train_class_loss)
         results['train_loss'].append(train_loss)
-        results['train_accuracy'].append(train_accuracy)
+        results['train_meta_accuracy'].append(train_meta_accuracy)
+        results['train_class_accuracy'].append(train_class_accuracy)
         lr_scheduler.step(epoch)
 
-        val_loss, val_top1_accuracy, val_top5_accuracy = val(model)
+        val_meta_loss, val_class_loss, val_loss, val_top1_accuracy, val_top5_accuracy = val(model)
+        results['val_meta_loss'].append(val_meta_loss)
+        results['val_class_loss'].append(val_class_loss)
         results['val_loss'].append(val_loss)
         results['val_top1_accuracy'].append(val_top1_accuracy)
         results['val_top5_accuracy'].append(val_top5_accuracy)
