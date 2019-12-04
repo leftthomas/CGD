@@ -124,14 +124,14 @@ if __name__ == '__main__':
 
     best_acc = 0
     for epoch in range(1, NUM_EPOCHS + 1):
-        # train_meta_loss, train_class_loss, train_loss, train_meta_accuracy, train_class_accuracy = train(model,
-        #                                                                                                  optimizer)
-        # results['train_meta_loss'].append(train_meta_loss)
-        # results['train_class_loss'].append(train_class_loss)
-        # results['train_loss'].append(train_loss)
-        # results['train_meta_accuracy'].append(train_meta_accuracy)
-        # results['train_class_accuracy'].append(train_class_accuracy)
-        # lr_scheduler.step(epoch)
+        train_meta_loss, train_class_loss, train_loss, train_meta_accuracy, train_class_accuracy = train(model,
+                                                                                                         optimizer)
+        results['train_meta_loss'].append(train_meta_loss)
+        results['train_class_loss'].append(train_class_loss)
+        results['train_loss'].append(train_loss)
+        results['train_meta_accuracy'].append(train_meta_accuracy)
+        results['train_class_accuracy'].append(train_class_accuracy)
+        lr_scheduler.step(epoch)
 
         val_meta_loss, val_class_loss, val_loss, val_top1_accuracy, val_top5_accuracy = val(model)
         results['val_meta_loss'].append(val_meta_loss)
