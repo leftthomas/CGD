@@ -61,9 +61,9 @@ def val(net):
             n_data += len(labels)
             meta_loss_data += meta_loss.item() * len(labels)
             class_loss_data += class_loss.item() * len(labels)
-            t_top1_data += (torch.topk(out_class, k=1, dim=-1)[1] == labels.unsqueeze(dim=-1)).any(
+            t_top1_data += (torch.topk(out_class, k=1, dim=-1)[1].cpu() == labels.unsqueeze(dim=-1)).any(
                 dim=-1).float().item()
-            t_top5_data += (torch.topk(out_class, k=5, dim=-1)[1] == labels.unsqueeze(dim=-1)).any(
+            t_top5_data += (torch.topk(out_class, k=5, dim=-1)[1].cpu() == labels.unsqueeze(dim=-1)).any(
                 dim=-1).float().item()
             val_progress.set_description('Val Epoch {}/{} - Meta Loss:{:.4f} - Class Loss:{:.4f} - Loss:{:.4f} - '
                                          'Acc@1:{:.2f}% - Acc@5:{:.2f}%'
