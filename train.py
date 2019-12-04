@@ -38,10 +38,10 @@ def train(net, optim):
         class_loss_data += class_loss.item() * len(labels)
         meta_true_data += torch.sum((meta_pred.cpu() == meta_labels).float()).item() / ENSEMBLE_SIZE
         class_true_data += torch.sum((class_pred.cpu() == labels).float()).item()
-        train_progress.set_description('Epoch {}/{} - Training Meta Loss:{:.4f} - Training Class Loss:{:.4f} - '
-                                       'Training Loss:{:.4f} - Training Meta Acc:{:.2f}% - Training Class Acc:{:.2f}%'
-                                       .format(epoch, NUM_EPOCHS, meta_loss_data / n_data, class_loss_data /
-                                               n_data, (meta_loss_data + class_loss_data) / n_data, meta_true_data
+        train_progress.set_description('Training Epoch {}/{} - Meta Loss:{:.4f} - Class Loss:{:.4f} - Loss:{:.4f} - '
+                                       'Meta Acc:{:.2f}% - Class Acc:{:.2f}%'
+                                       .format(epoch, NUM_EPOCHS, meta_loss_data / n_data, class_loss_data / n_data,
+                                               (meta_loss_data + class_loss_data) / n_data, meta_true_data
                                                / n_data * 100, class_true_data / n_data * 100))
 
     return meta_loss_data / n_data, class_loss_data / n_data, (meta_loss_data + class_loss_data) / n_data, \
@@ -65,11 +65,11 @@ def val(net):
                 dim=-1).float().item()
             t_top5_data += (torch.topk(out_class, k=5, dim=-1)[1] == labels.unsqueeze(dim=-1)).any(
                 dim=-1).float().item()
-            val_progress.set_description('Epoch {}/{} - Val Meta Loss:{:.4f} - Val Class Loss:{:.4f} - '
-                                         'Val Loss:{:.4f} - Val Acc@1:{:.2f}% - Val Acc@5:{:.2f}%'
-                                         .format(epoch, NUM_EPOCHS, meta_loss_data / n_data, class_loss_data /
-                                                 n_data, (meta_loss_data + class_loss_data) / n_data, t_top1_data
-                                                 / n_data * 100, t_top5_data / n_data * 100))
+            val_progress.set_description('Val Epoch {}/{} - Meta Loss:{:.4f} - Class Loss:{:.4f} - Loss:{:.4f} - '
+                                         'Acc@1:{:.2f}% - Acc@5:{:.2f}%'
+                                         .format(epoch, NUM_EPOCHS, meta_loss_data / n_data, class_loss_data / n_data,
+                                                 (meta_loss_data + class_loss_data) / n_data, t_top1_data /
+                                                 n_data * 100, t_top5_data / n_data * 100))
 
     return meta_loss_data / n_data, class_loss_data / n_data, (meta_loss_data + class_loss_data) / n_data, \
            t_top1_data / n_data * 100, t_top5_data / n_data * 100
