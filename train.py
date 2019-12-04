@@ -61,10 +61,10 @@ def val(net):
             n_data += len(labels)
             meta_loss_data += meta_loss.item() * len(labels)
             class_loss_data += class_loss.item() * len(labels)
-            t_top1_data += (torch.topk(out_class, k=1, dim=-1)[1].cpu() == labels.unsqueeze(dim=-1)).any(
-                dim=-1).float().item()
-            t_top5_data += (torch.topk(out_class, k=5, dim=-1)[1].cpu() == labels.unsqueeze(dim=-1)).any(
-                dim=-1).float().item()
+            t_top1_data += torch.sum((torch.topk(out_class, k=1, dim=-1)[1].cpu() == labels.unsqueeze(dim=-1)).any(
+                dim=-1).float()).item()
+            t_top5_data += torch.sum((torch.topk(out_class, k=5, dim=-1)[1].cpu() == labels.unsqueeze(dim=-1)).any(
+                dim=-1).float()).item()
             val_progress.set_description('Val Epoch {}/{} - Meta Loss:{:.4f} - Class Loss:{:.4f} - Loss:{:.4f} - '
                                          'Acc@1:{:.2f}% - Acc@5:{:.2f}%'
                                          .format(epoch, NUM_EPOCHS, meta_loss_data / n_data, class_loss_data / n_data,
@@ -124,14 +124,14 @@ if __name__ == '__main__':
 
     best_acc = 0
     for epoch in range(1, NUM_EPOCHS + 1):
-        train_meta_loss, train_class_loss, train_loss, train_meta_accuracy, train_class_accuracy = train(model,
-                                                                                                         optimizer)
-        results['train_meta_loss'].append(train_meta_loss)
-        results['train_class_loss'].append(train_class_loss)
-        results['train_loss'].append(train_loss)
-        results['train_meta_accuracy'].append(train_meta_accuracy)
-        results['train_class_accuracy'].append(train_class_accuracy)
-        lr_scheduler.step(epoch)
+        # train_meta_loss, train_class_loss, train_loss, train_meta_accuracy, train_class_accuracy = train(model,
+        #                                                                                                  optimizer)
+        # results['train_meta_loss'].append(train_meta_loss)
+        # results['train_class_loss'].append(train_class_loss)
+        # results['train_loss'].append(train_loss)
+        # results['train_meta_accuracy'].append(train_meta_accuracy)
+        # results['train_class_accuracy'].append(train_class_accuracy)
+        # lr_scheduler.step(epoch)
 
         val_meta_loss, val_class_loss, val_loss, val_top1_accuracy, val_top5_accuracy = val(model)
         results['val_meta_loss'].append(val_meta_loss)
