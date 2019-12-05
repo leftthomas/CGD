@@ -52,5 +52,5 @@ class Model(nn.Module):
             classes = self.classifiers[i](global_feature)
             out_features.append(classes)
         out_features = torch.stack(out_features, dim=1)
-        out_class = self.classifier(out_features.view(out_features.size(0), -1))
+        out_class = self.classifier(out_features.detach().view(out_features.size(0), -1))
         return out_features, out_class
