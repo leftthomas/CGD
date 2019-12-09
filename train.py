@@ -11,7 +11,7 @@ from torch.utils.data.dataloader import DataLoader
 from torchvision.datasets import ImageFolder
 from tqdm import tqdm
 
-from model import FeatureExtractor
+from model import Model
 from utils import train_transform, val_transform
 
 warnings.filterwarnings("ignore")
@@ -22,15 +22,17 @@ def train(net, optim):
     loss_data, true_data, n_data, train_progress = 0, 0, 0, tqdm(train_data_loader)
     for inputs, labels in train_progress:
         optim.zero_grad()
-        out_features = net(inputs.to(device_ids[0]))
-        meta_labels = meta_ids[labels]
+        out_features, out_classes = net(inputs.to(device_ids[0]))
+        meta_labels = torch.randint(high=META_CLASS_SIZE, size=(len(labels), ENSEMBLE_SIZE))
         meta_loss = cel_criterion(out_features.permute(0, 2, 1).contiguous(), meta_labels.to(device_ids[0]))
+        class_loss = cel_criterion(out_classes, labels.to(device_ids[0]))
         meta_loss.backward()
+        class_loss.backward()
         optim.step()
-        meta_pred = torch.argmax(out_features, dim=-1)
+        pred = torch.argmax(out_classes, dim=-1)
         n_data += len(labels)
-        loss_data += meta_loss.item() * len(labels)
-        true_data += torch.sum((meta_pred.cpu() == meta_labels).float()).item() / ENSEMBLE_SIZE
+        loss_data += class_loss.item() * len(labels)
+        true_data += torch.sum((pred.cpu() == labels).float()).item()
         train_progress.set_description('Training Epoch {}/{} - Loss:{:.4f} - Acc:{:.2f}%'
                                        .format(epoch, NUM_EPOCHS, loss_data / n_data, true_data / n_data * 100))
 
@@ -40,28 +42,21 @@ def train(net, optim):
 def val(net):
     net.eval()
     with torch.no_grad():
-        meta_loss_data, class_loss_data, t_top1_data, t_top5_data, n_data, val_progress = 0, 0, 0, 0, 0, tqdm(
-            val_data_loader)
+        loss_data, t_top1_data, t_top5_data, n_data, val_progress = 0, 0, 0, 0, tqdm(val_data_loader)
         for inputs, labels in val_progress:
             out_features, out_class = net(inputs.to(device_ids[0]))
-            meta_labels = meta_ids[labels]
-            meta_loss = cel_criterion(out_features.permute(0, 2, 1).contiguous(), meta_labels.to(device_ids[0]))
             class_loss = cel_criterion(out_class, labels.to(device_ids[0]))
             n_data += len(labels)
-            meta_loss_data += meta_loss.item() * len(labels)
-            class_loss_data += class_loss.item() * len(labels)
+            loss_data += class_loss.item() * len(labels)
             t_top1_data += torch.sum((torch.topk(out_class, k=1, dim=-1)[1].cpu() == labels.unsqueeze(dim=-1)).any(
                 dim=-1).float()).item()
             t_top5_data += torch.sum((torch.topk(out_class, k=5, dim=-1)[1].cpu() == labels.unsqueeze(dim=-1)).any(
                 dim=-1).float()).item()
-            val_progress.set_description('Val Epoch {}/{} - Meta Loss:{:.4f} - Class Loss:{:.4f} - Loss:{:.4f} - '
-                                         'Acc@1:{:.2f}% - Acc@5:{:.2f}%'
-                                         .format(epoch, NUM_EPOCHS, meta_loss_data / n_data, class_loss_data / n_data,
-                                                 (meta_loss_data + class_loss_data) / n_data, t_top1_data /
-                                                 n_data * 100, t_top5_data / n_data * 100))
+            val_progress.set_description('Val Epoch {}/{} - Loss:{:.4f} - Acc@1:{:.2f}% - Acc@5:{:.2f}%'
+                                         .format(epoch, NUM_EPOCHS, loss_data / n_data, t_top1_data / n_data * 100,
+                                                 t_top5_data / n_data * 100))
 
-    return meta_loss_data / n_data, class_loss_data / n_data, (meta_loss_data + class_loss_data) / n_data, \
-           t_top1_data / n_data * 100, t_top5_data / n_data * 100
+    return loss_data / n_data, t_top1_data / n_data * 100, t_top5_data / n_data * 100
 
 
 if __name__ == '__main__':
@@ -84,11 +79,10 @@ if __name__ == '__main__':
     val_data_set = ImageFolder(root='{}/{}'.format(DATA_PATH, 'val'), transform=val_transform)
     val_data_loader = DataLoader(val_data_set, BATCH_SIZE, shuffle=False, num_workers=16, pin_memory=True)
 
-    feature_extractor = DataParallel(FeatureExtractor(META_CLASS_SIZE, ENSEMBLE_SIZE).to(device_ids[0]),
-                                     device_ids=device_ids)
-    print("# trainable parameters:",
-          sum(param.numel() if param.requires_grad else 0 for param in feature_extractor.parameters()))
-    optimizer = Adam(feature_extractor.parameters(), lr=1e-4)
+    model = DataParallel(
+        Model(META_CLASS_SIZE, ENSEMBLE_SIZE, len(train_data_set.classes)).to(device_ids[0]), device_ids=device_ids)
+    print("# trainable parameters:", sum(param.numel() if param.requires_grad else 0 for param in model.parameters()))
+    optimizer = Adam(model.parameters(), lr=1e-4)
     lr_scheduler = MultiStepLR(optimizer, milestones=[int(NUM_EPOCHS * 0.5), int(NUM_EPOCHS * 0.7)], gamma=0.1)
     cel_criterion = CrossEntropyLoss()
 
@@ -97,12 +91,12 @@ if __name__ == '__main__':
 
     best_acc = 0
     for epoch in range(1, NUM_EPOCHS + 1):
-        train_loss, train_accuracy = train(feature_extractor, optimizer)
+        train_loss, train_accuracy = train(model, optimizer)
         results['train_loss'].append(train_loss)
         results['train_accuracy'].append(train_accuracy)
         lr_scheduler.step(epoch)
 
-        val_loss, val_top1_accuracy, val_top5_accuracy = val(feature_extractor)
+        val_loss, val_top1_accuracy, val_top5_accuracy = val(model)
         results['val_loss'].append(val_loss)
         results['val_top1_accuracy'].append(val_top1_accuracy)
         results['val_top5_accuracy'].append(val_top5_accuracy)
@@ -111,4 +105,4 @@ if __name__ == '__main__':
         data_frame.to_csv('results/{}_results.csv'.format(save_name_pre), index_label='epoch')
         if val_top1_accuracy > best_acc:
             best_acc = val_top1_accuracy
-            torch.save(feature_extractor.module.state_dict(), 'epochs/{}_model.pth'.format(save_name_pre))
+            torch.save(model.module.state_dict(), 'epochs/{}_model.pth'.format(save_name_pre))
