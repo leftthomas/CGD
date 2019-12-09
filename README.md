@@ -21,8 +21,6 @@ conda install pytorch torchvision cudatoolkit=10.0 -c pytorch
 python train.py --num_epochs 50 --load_ids
 optional arguments:
 --data_path                   path to dataset [default value is '/home/data/imagenet/ILSVRC2012']
---with_random                 with branch random weight or not [default value is False]
---load_ids                    load already generated ids or not [default value is False]
 --batch_size                  train batch size [default value is 1024]
 --num_epochs                  train epochs number [default value is 40]
 --ensemble_size               ensemble model size [default value is 12]
