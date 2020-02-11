@@ -33,11 +33,15 @@ optional arguments:
 --data_name                   dataset name [default value is 'car'](choices=['car', 'cub', 'sop', 'isc'])
 --crop_type                   crop data or not, it only works for car or cub dataset [default value is 'uncropped'](choices=['uncropped', 'cropped'])
 --recalls                     selected recall [default value is '1,2,4,8']
---load_ids                    load already generated ids or not [default value is False]
---batch_size                  train batch size [default value is 32]
---num_epochs                  train epochs number [default value is 20]
+--backbone_type               backbone type [default value is 'resnet18'](choices=['resnet18', 'resnet34', 'resnet50', 'resnext50'])
+--share_type                  shared module type [default value is 'layer1'](choices=['maxpool', 'layer1', 'layer2', 'layer3', 'layer4'])
 --ensemble_size               ensemble model size [default value is 48]
 --meta_class_size             meta class size [default value is 12]
+--with_random                 with random branch weight or not [default value is False]
+--load_ids                    load already generated ids or not [default value is False]
+--with_train                  with train or not [default value is False]
+--batch_size                  train batch size [default value is 32]
+--num_epochs                  train epochs number [default value is 20]
 ```
 
 ## Benchmarks
