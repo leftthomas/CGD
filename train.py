@@ -70,12 +70,13 @@ if __name__ == '__main__':
                         help='crop data or not, it only works for car or cub dataset')
     parser.add_argument('--recalls', default='1,2,4,8', type=str, help='selected recall')
     parser.add_argument('--backbone_type', default='resnet18', type=str,
-                        choices=['resnet18', 'resnet34', 'resnet50', 'resnext50'], help='backbone type')
+                        choices=['resnet18', 'resnet34', 'resnext50'], help='backbone type')
     parser.add_argument('--share_type', default='layer1', type=str,
                         choices=['maxpool', 'layer1', 'layer2', 'layer3', 'layer4'], help='shared module type')
     parser.add_argument('--ensemble_size', default=48, type=int, help='ensemble model size')
     parser.add_argument('--meta_class_size', default=12, type=int, help='meta class size')
     parser.add_argument('--with_random', action='store_true', help='with random branch weight or not')
+    parser.add_argument('--with_fc', action='store_true', help='with appending last fc layer or not')
     parser.add_argument('--load_ids', action='store_true', help='load already generated ids or not')
     parser.add_argument('--with_train', action='store_true', help='with train or not')
     parser.add_argument('--batch_size', default=32, type=int, help='train batch size')
@@ -85,11 +86,12 @@ if __name__ == '__main__':
     # args parse
     DATA_PATH, DATA_NAME, CROP_TYPE, RECALLS = opt.data_path, opt.data_name, opt.crop_type, opt.recalls
     BACKBONE_TYPE, SHARE_TYPE, ENSEMBLE_SIZE = opt.backbone_type, opt.share_type, opt.ensemble_size
-    META_CLASS_SIZE, WITH_RANDOM, LOAD_IDS = opt.meta_class_size, opt.with_random, opt.load_ids
+    META_CLASS_SIZE, WITH_RANDOM, WITH_FC, LOAD_IDS = opt.meta_class_size, opt.with_random, opt.with_fc, opt.load_ids
     WITH_TRAIN, BATCH_SIZE, NUM_EPOCHS = opt.with_train, opt.batch_size, opt.num_epochs
-    save_name_pre = '{}_{}_{}_{}_{}_{}_{}_{}'.format(DATA_NAME, CROP_TYPE, BACKBONE_TYPE, SHARE_TYPE, ENSEMBLE_SIZE,
-                                                     META_CLASS_SIZE, 'random' if WITH_RANDOM else 'fixed',
-                                                     'train' if WITH_TRAIN else 'test')
+    save_name_pre = '{}_{}_{}_{}_{}_{}_{}_{}_{}'.format(DATA_NAME, CROP_TYPE, BACKBONE_TYPE, SHARE_TYPE, ENSEMBLE_SIZE,
+                                                        META_CLASS_SIZE, 'random' if WITH_RANDOM else 'fixed',
+                                                        'fc' if WITH_FC else 'none',
+                                                        'train' if WITH_TRAIN else 'test')
     recall_ids = [int(k) for k in RECALLS.split(',')]
     results = {'train_loss': [], 'train_accuracy': []} if WITH_TRAIN else {}
     for index, id in enumerate(recall_ids):
@@ -112,7 +114,7 @@ if __name__ == '__main__':
         eval_dict['gallery'] = {'data_loader': gallery_data_loader}
 
     # model setup, model profile, optimizer config and loss definition
-    model = Model(ENSEMBLE_SIZE, META_CLASS_SIZE, BACKBONE_TYPE, SHARE_TYPE, WITH_RANDOM).cuda()
+    model = Model(ENSEMBLE_SIZE, META_CLASS_SIZE, BACKBONE_TYPE, SHARE_TYPE, WITH_RANDOM, WITH_FC).cuda()
     flops, params = profile(model, inputs=(torch.randn(1, 3, 256, 256).cuda(),))
     flops, params = clever_format([flops, params])
     print('# Model Params: {} FLOPs: {}'.format(params, flops))
