@@ -53,12 +53,12 @@ class Model(nn.Module):
         common_feature = self.public_extractor(x)
         out = []
         if self.with_random:
-            branch_weight = torch.rand(self.ensemble_size, device=x.device)
+            branch_weight = torch.rand(batch_size, self.ensemble_size, device=x.device)
             branch_weight = F.softmax(branch_weight, dim=-1)
         else:
-            branch_weight = torch.ones(self.ensemble_size, device=x.device)
+            branch_weight = torch.ones(batch_size, self.ensemble_size, device=x.device)
         for i in range(self.ensemble_size):
-            individual_feature = self.learners[i](branch_weight[i] * common_feature)
+            individual_feature = self.learners[i](branch_weight[:, i].view(batch_size, 1, 1, 1) * common_feature)
             global_feature = F.adaptive_avg_pool2d(individual_feature, output_size=(1, 1)).view(batch_size, -1)
             if self.with_fc:
                 global_feature = self.classifiers[i](global_feature)
