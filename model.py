@@ -52,7 +52,7 @@ class Model(nn.Module):
         batch_size = x.size(0)
         common_feature = self.public_extractor(x)
         out = []
-        if self.with_random:
+        if self.with_random and self.training:
             branch_weight = torch.rand(batch_size, self.ensemble_size, device=x.device)
             branch_weight = F.softmax(branch_weight, dim=-1)
         else:
