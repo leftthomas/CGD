@@ -1,67 +1,187 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torchvision.models.resnet import resnet18, resnet34, resnext50_32x4d
+from torch import nn
+from torch.nn import functional as F
 
 
-class Model(nn.Module):
-    def __init__(self, ensemble_size, meta_class_size, backbone_type='resnet18', share_type='layer1',
-                 with_random=False, with_fc=True):
-        super(Model, self).__init__()
+class FastSCNN(nn.Module):
+    def __init__(self, in_channels, num_classes):
+        super().__init__()
 
-        # backbone
-        backbones = {'resnet18': (resnet18, 1), 'resnet34': (resnet34, 1), 'resnext50': (resnext50_32x4d, 4)}
-        backbone, expansion = backbones[backbone_type]
-        module_names = ['conv1', 'bn1', 'relu', 'maxpool', 'layer1', 'layer2', 'layer3', 'layer4']
-
-        # configs
-        self.ensemble_size, self.with_random, self.with_fc = ensemble_size, with_random, with_fc
-
-        # common features
-        self.public_extractor, basic_model = [], backbone(pretrained=True)
-        common_module_names = module_names[:module_names.index(share_type) + 1]
-        for name, module in basic_model.named_children():
-            if name in common_module_names:
-                self.public_extractor.append(module)
-        self.public_extractor = nn.Sequential(*self.public_extractor)
-        print("# trainable public extractor parameters:",
-              sum(param.numel() if param.requires_grad else 0 for param in self.public_extractor.parameters()))
-
-        # individual features
-        self.learners, individual_module_names = [], module_names[module_names.index(share_type) + 1:]
-        for i in range(ensemble_size):
-            learner, basic_model = [], backbone(pretrained=True)
-            for name, module in basic_model.named_children():
-                if name in individual_module_names:
-                    learner.append(module)
-            self.learners.append(nn.Sequential(*learner))
-        self.learners = nn.ModuleList(self.learners)
-        print("# trainable individual learner parameters:",
-              sum(param.numel() if param.requires_grad else 0 for param in
-                  self.learners.parameters()) // ensemble_size)
-
-        if with_fc:
-            # individual classifiers
-            self.classifiers = nn.ModuleList([nn.Linear(512 * expansion, meta_class_size)
-                                              for _ in range(ensemble_size)])
-            print("# trainable individual classifier parameters:",
-                  sum(param.numel() if param.requires_grad else 0 for param in
-                      self.classifiers.parameters()) // ensemble_size)
+        self.learning_to_down_sample = LearningToDownSample(in_channels)
+        self.global_feature_extractor = GlobalFeatureExtractor()
+        self.feature_fusion = FeatureFusion(scale_factor=4)
+        self.classifier = Classifier(num_classes, scale_factor=8)
 
     def forward(self, x):
-        batch_size = x.size(0)
-        common_feature = self.public_extractor(x)
-        out = []
-        if self.with_random and self.training:
-            branch_weight = torch.rand(batch_size, self.ensemble_size, device=x.device)
-            branch_weight = F.softmax(branch_weight, dim=-1)
+        shared = self.learning_to_down_sample(x)
+        x = self.global_feature_extractor(shared)
+        x = self.feature_fusion(shared, x)
+        x = self.classifier(x)
+        return x
+
+
+class LearningToDownSample(nn.Module):
+    def __init__(self, in_channels):
+        super().__init__()
+
+        self.conv = ConvBlock(in_channels=in_channels, out_channels=32, stride=2)
+        self.dsconv1 = nn.Sequential(
+            # depthwise convolution
+            nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1, dilation=1, groups=32, bias=False),
+            nn.BatchNorm2d(32),
+            # pointwise convolution
+            nn.Conv2d(32, 48, kernel_size=1, stride=1, padding=0, dilation=1, groups=1, bias=False),
+            nn.BatchNorm2d(48),
+            nn.ReLU(inplace=True))
+        self.dsconv2 = nn.Sequential(
+            nn.Conv2d(48, 48, kernel_size=3, stride=2, padding=1, dilation=1, groups=48, bias=False),
+            nn.BatchNorm2d(48),
+            nn.Conv2d(48, 64, kernel_size=1, stride=1, padding=0, dilation=1, groups=1, bias=False),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True))
+
+    def forward(self, x):
+        x = self.conv(x)
+        x = self.dsconv1(x)
+        x = self.dsconv2(x)
+        return x
+
+
+class GlobalFeatureExtractor(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.first_block = nn.Sequential(Bottleneck(64, 64, 2, 6),
+                                         Bottleneck(64, 64, 1, 6),
+                                         Bottleneck(64, 64, 1, 6))
+        self.second_block = nn.Sequential(Bottleneck(64, 96, 2, 6),
+                                          Bottleneck(96, 96, 1, 6),
+                                          Bottleneck(96, 96, 1, 6))
+        self.third_block = nn.Sequential(Bottleneck(96, 128, 1, 6),
+                                         Bottleneck(128, 128, 1, 6),
+                                         Bottleneck(128, 128, 1, 6))
+        self.ppm = PPMModule(128, 128)
+
+    def forward(self, x):
+        x = self.first_block(x)
+        x = self.second_block(x)
+        x = self.third_block(x)
+        x = self.ppm(x)
+        return x
+
+
+class FeatureFusion(nn.Module):
+    def __init__(self, scale_factor):
+        super().__init__()
+
+        self.scale_factor = scale_factor
+        self.conv_high_res = nn.Conv2d(64, 128, kernel_size=1, stride=1, padding=0, bias=True)
+
+        self.dwconv = ConvBlock(in_channels=128, out_channels=128, stride=1, padding=scale_factor,
+                                dilation=scale_factor, groups=128)
+        self.conv_low_res = nn.Conv2d(128, 128, kernel_size=1, stride=1, padding=0, bias=True)
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, high_res_input, low_res_input):
+        low_res_input = F.interpolate(input=low_res_input, scale_factor=self.scale_factor, mode='bilinear',
+                                      align_corners=True)
+        low_res_input = self.dwconv(low_res_input)
+        low_res_input = self.conv_low_res(low_res_input)
+
+        high_res_input = self.conv_high_res(high_res_input)
+        x = torch.add(high_res_input, low_res_input)
+        return self.relu(x)
+
+
+class Classifier(nn.Module):
+    def __init__(self, num_classes, scale_factor):
+        super().__init__()
+
+        self.scale_factor = scale_factor
+        self.dsconv1 = nn.Sequential(
+            # depthwise convolution
+            nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1, dilation=1, groups=128, bias=False),
+            nn.BatchNorm2d(128),
+            # pointwise convolution
+            nn.Conv2d(128, 128, kernel_size=1, stride=1, padding=0, dilation=1, groups=1, bias=False),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True))
+        self.dsconv2 = nn.Sequential(
+            nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1, dilation=1, groups=128, bias=False),
+            nn.BatchNorm2d(128),
+            nn.Conv2d(128, 128, kernel_size=1, stride=1, padding=0, dilation=1, groups=1, bias=False),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True))
+        self.drop_out = nn.Dropout(p=0.1)
+        self.conv = nn.Conv2d(128, num_classes, kernel_size=1, stride=1, padding=0, bias=True)
+
+    def forward(self, x):
+        x = self.dsconv1(x)
+        x = self.dsconv2(x)
+        x = self.drop_out(x)
+        x = self.conv(x)
+        x = F.interpolate(input=x, scale_factor=self.scale_factor, mode='bilinear', align_corners=True)
+        return x
+
+
+class ConvBlock(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size=3, stride=2, padding=1, dilation=1, groups=1):
+        super().__init__()
+
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding,
+                              dilation=dilation, groups=groups, bias=False)
+        self.bn = nn.BatchNorm2d(out_channels)
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, input):
+        x = self.conv(input)
+        return self.relu(self.bn(x))
+
+
+class Bottleneck(nn.Module):
+    def __init__(self, in_channels, out_channels, stride, expand_ratio):
+        super().__init__()
+
+        hidden_dim = in_channels * expand_ratio
+        self.use_res_connect = stride == 1 and in_channels == out_channels
+
+        self.conv = nn.Sequential(
+            nn.Conv2d(in_channels, hidden_dim, 1, 1, 0, bias=False),
+            nn.BatchNorm2d(hidden_dim),
+            nn.ReLU(inplace=True),
+            # depthwise convolution
+            nn.Conv2d(hidden_dim, hidden_dim, 3, stride, 1, groups=hidden_dim, bias=False),
+            nn.BatchNorm2d(hidden_dim),
+            nn.ReLU(inplace=True),
+            # pw-linear
+            nn.Conv2d(hidden_dim, out_channels, 1, 1, 0, bias=False),
+            nn.BatchNorm2d(out_channels))
+
+    def forward(self, x):
+        if self.use_res_connect:
+            return x + self.conv(x)
         else:
-            branch_weight = torch.ones(batch_size, self.ensemble_size, device=x.device)
-        for i in range(self.ensemble_size):
-            individual_feature = self.learners[i](branch_weight[:, i].view(batch_size, 1, 1, 1) * common_feature)
-            global_feature = F.adaptive_avg_pool2d(individual_feature, output_size=(1, 1)).view(batch_size, -1)
-            if self.with_fc:
-                global_feature = self.classifiers[i](global_feature)
-            out.append(global_feature)
-        out = torch.stack(out, dim=1)
-        return out
+            return self.conv(x)
+
+
+class PPMModule(nn.Module):
+    def __init__(self, in_channels, out_channels, sizes=(1, 2, 3, 6)):
+        super().__init__()
+
+        inter_channels = in_channels // len(sizes)
+        assert in_channels % len(sizes) == 0
+
+        self.stages = nn.ModuleList([self._make_stage(in_channels, inter_channels, size) for size in sizes])
+        self.conv = ConvBlock(in_channels * 2, out_channels, kernel_size=1, stride=1, padding=0)
+
+    def _make_stage(self, in_channels, inter_channels, size):
+        prior = nn.AdaptiveAvgPool2d(output_size=(size, size))
+        conv = ConvBlock(in_channels, inter_channels, kernel_size=1, stride=1, padding=0)
+        return nn.Sequential(prior, conv)
+
+    def forward(self, feats):
+        h, w = feats.size(2), feats.size(3)
+        priors = [F.interpolate(input=stage(feats), size=(h, w), mode='bilinear',
+                                align_corners=True) for stage in self.stages] + [feats]
+        bottle = self.conv(torch.cat(priors, dim=1))
+        return bottle
