@@ -40,7 +40,7 @@ Set environment variable `CITYSCAPES_DATASET` firstly, for example:
 ```
 export CITYSCAPES_DATASET=/home/data/cityscapes
 ```
-and then run [createTrainIdLabelImgs.py](https://github.com/mcordts/cityscapesScripts/blob/master/cityscapesscripts/preparation/createTrainIdLabelImgs.py) to creat `labelTrainIds.png`.
+and then run [createTrainIdInstanceImgs.py](https://github.com/mcordts/cityscapesScripts/blob/master/cityscapesscripts/preparation/createTrainIdInstanceImgs.py) to creat `instanceTrainIds.png`.
 
 ## Usage
 ### Train model
