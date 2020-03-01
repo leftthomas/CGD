@@ -105,7 +105,7 @@ if __name__ == '__main__':
     #     eval_dict['gallery'] = {'data_loader': gallery_data_loader}
 
     # model setup, model profile, optimizer config and loss definition
-    model = Model(backbone_type='resnet50', gd_config='SM', feature_dim=FEATURE_DIM, num_classes=100).cuda()
+    model = Model(BACKBONE_TYPE, GD_CONFIG, FEATURE_DIM, num_classes=98).cuda()
     flops, params = profile(model, inputs=(torch.randn(1, 3, 224, 224).cuda(),))
     flops, params = clever_format([flops, params])
     print('# Model Params: {} FLOPs: {}'.format(params, flops))
