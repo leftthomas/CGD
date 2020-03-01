@@ -68,7 +68,7 @@ if __name__ == '__main__':
     parser.add_argument('--crop_type', default='uncropped', type=str, choices=['uncropped', 'cropped'],
                         help='crop data or not, it only works for car or cub dataset')
     parser.add_argument('--backbone_type', default='resnet50', type=str, choices=['resnet50', 'resnext50'],
-                        help='backbone type')
+                        help='backbone network type')
     parser.add_argument('--gd_config', default='SM', type=str,
                         choices=['S', 'M', 'G', 'SM', 'MS', 'SG', 'GS', 'MG', 'GM', 'SMG', 'MSG', 'GSM'],
                         help='global descriptors config')
@@ -94,15 +94,15 @@ if __name__ == '__main__':
         results['test_recall@{}'.format(recall_id)] = []
 
     # dataset loader
-    # train_data_set = ImageReader(DATA_PATH, DATA_NAME, 'train', CROP_TYPE, ENSEMBLE_SIZE, META_CLASS_SIZE, LOAD_IDS)
-    # train_data_loader = DataLoader(train_data_set, BATCH_SIZE, shuffle=True, num_workers=16)
-    # test_data_set = ImageReader(DATA_PATH, DATA_NAME, 'query' if DATA_NAME == 'isc' else 'test', CROP_TYPE)
-    # test_data_loader = DataLoader(test_data_set, BATCH_SIZE, shuffle=False, num_workers=16)
-    # eval_dict = {'test': {'data_loader': test_data_loader}}
-    # if DATA_NAME == 'isc':
-    #     gallery_data_set = ImageReader(DATA_PATH, DATA_NAME, 'gallery', CROP_TYPE)
-    #     gallery_data_loader = DataLoader(gallery_data_set, BATCH_SIZE, shuffle=False, num_workers=16)
-    #     eval_dict['gallery'] = {'data_loader': gallery_data_loader}
+    train_data_set = ImageReader(DATA_PATH, DATA_NAME, 'train', CROP_TYPE, ENSEMBLE_SIZE, META_CLASS_SIZE, LOAD_IDS)
+    train_data_loader = DataLoader(train_data_set, BATCH_SIZE, shuffle=True, num_workers=16)
+    test_data_set = ImageReader(DATA_PATH, DATA_NAME, 'query' if DATA_NAME == 'isc' else 'test', CROP_TYPE)
+    test_data_loader = DataLoader(test_data_set, BATCH_SIZE, shuffle=False, num_workers=16)
+    eval_dict = {'test': {'data_loader': test_data_loader}}
+    if DATA_NAME == 'isc':
+        gallery_data_set = ImageReader(DATA_PATH, DATA_NAME, 'gallery', CROP_TYPE)
+        gallery_data_loader = DataLoader(gallery_data_set, BATCH_SIZE, shuffle=False, num_workers=16)
+        eval_dict['gallery'] = {'data_loader': gallery_data_loader}
 
     # model setup, model profile, optimizer config and loss definition
     model = Model(BACKBONE_TYPE, GD_CONFIG, FEATURE_DIM, num_classes=98).cuda()
@@ -128,9 +128,6 @@ if __name__ == '__main__':
         data_base = {}
         if rank > best_recall:
             best_recall = rank
-            data_base['train_images'] = train_ext_data_set.images
-            data_base['train_labels'] = train_ext_data_set.labels
-            data_base['train_features'] = eval_dict['train']['features']
             data_base['test_images'] = test_data_set.images
             data_base['test_labels'] = test_data_set.labels
             data_base['test_features'] = eval_dict['test']['features']

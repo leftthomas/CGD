@@ -23,14 +23,19 @@ You should download these datasets by yourself, and extract them into `${data_pa
 `car`, `cub`, `sop` and `isc`. Then run `data_utils.py` to preprocess them.
 
 ## Usage
-### Train model
+### Train CGD
 ```
-python train.py --crop_h 512 --crop_w 1024
+python train.py --feature_dim 512 --gd_config SG
 optional arguments:
---data_path                   Data path for cityscapes dataset [default value is '/home/data/cityscapes']
---crop_h                      Crop height for training images [default value is 1024]
---crop_w                      Crop width for training images [default value is 2048]
---batch_size                  Number of data for each batch to train [default value is 12]
---save_step                   Number of steps to save predicted results [default value is 5]
---epochs                      Number of sweeps over the dataset to train [default value is 100]
+--data_path                   datasets path [default value is '/home/data']
+--data_name                   dataset name [default value is 'car'](choices=['car', 'cub', 'sop', 'isc'])
+--crop_type                   crop data or not, it only works for car or cub dataset [default value is 'uncropped'](choices=['uncropped', 'cropped'])
+--backbone_type               backbone network type [default value is 'resnet50'](choices=['resnet50', 'resnext50'])
+--gd_config                   global descriptors config [default value is 'SM'](choices=['S', 'M', 'G', 'SM', 'MS', 'SG', 'GS', 'MG', 'GM', 'SMG', 'MSG', 'GSM'])
+--feature_dim                 feature dim [default value is 1536]
+--temperature                 temperature scaling used in softmax cross-entropy loss [default value is 0.5]
+--margin                      margin of m for triplet loss [default value is 0.1]
+--recalls                     selected recall [default value is '1,2,4,8']
+--batch_size                  train batch size [default value is 128]
+--num_epochs                  train epoch number [default value is 100]
 ```
