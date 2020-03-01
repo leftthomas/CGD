@@ -1,7 +1,8 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
-from torchvision.models import resnet50, resnext50_32x4d
+
+from resnet import resnet50, resnext50_32x4d
 
 
 class GlobalDescriptor(nn.Module):
@@ -31,12 +32,7 @@ class Model(nn.Module):
         backbone = resnet50(pretrained=True) if backbone_type == 'resnet50' else resnext50_32x4d(pretrained=True)
         self.features = []
         for name, module in backbone.named_children():
-            # remove down sample for stage3
-            if name == 'layer3':
-                module = []
-                for child in module.children():
-                    print('x')
-            if isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
+            if isinstance(module, nn.AdaptiveAvgPool2d) or isinstance(module, nn.Linear):
                 continue
             self.features.append(module)
         self.features = nn.Sequential(*self.features)
