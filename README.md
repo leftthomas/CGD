@@ -44,7 +44,7 @@ optional arguments:
 The models are trained on one NVIDIA Tesla V100 (32G) GPU with 100 epochs, the learning rate is decayed by 10 on 60th and 80th epoch.
 
 This implement has one small difference with the paper, in the paper, the generation method of Global Descriptors 
-is ![](http://latex.codecogs.com/gif.latex?\\frac{1}{1+sin(x)}), but in this repo is 
+is ![](http://latex.codecogs.com/gif.latex?\\f_c=\left(\frac{1}{\left |\chi_{c}\right |}\sum_{x \in \chi_{c}}x^{p_c}\right)^\frac{1}{p_c}), but in this repo is 
 ![](http://latex.codecogs.com/gif.latex?\\frac{1}{1+sin(x)}).
 
 
