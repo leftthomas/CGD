@@ -55,7 +55,7 @@ def eval(net, recalls):
     desc = ''
     for index, id in enumerate(recalls):
         desc += 'R@{}:{:.2f}% '.format(id, acc_list[index] * 100)
-        results['test_recall@{}'.format(recall_ids[index])].append(acc_list[index] * 100)
+        results['test_recall@{}'.format(recalls[index])].append(acc_list[index] * 100)
     print(desc)
     return acc_list[0]
 
@@ -67,22 +67,31 @@ if __name__ == '__main__':
                         help='dataset name')
     parser.add_argument('--crop_type', default='uncropped', type=str, choices=['uncropped', 'cropped'],
                         help='crop data or not, it only works for car or cub dataset')
+    parser.add_argument('--backbone_type', default='resnet50', type=str, choices=['resnet50', 'resnext50'],
+                        help='backbone type')
+    parser.add_argument('--gd_config', default='SM', type=str,
+                        choices=['S', 'M', 'G', 'SM', 'MS', 'SG', 'GS', 'MG', 'GM', 'SMG', 'MSG', 'GSM'],
+                        help='global descriptors config')
+    parser.add_argument('--feature_dim', default=1536, type=int, help='feature dim')
+    parser.add_argument('--temperature', default=0.5, type=float,
+                        help='temperature scaling used in softmax cross-entropy loss')
+    parser.add_argument('--margin', default=0.1, type=float, help='margin of m for triplet loss')
     parser.add_argument('--recalls', default='1,2,4,8', type=str, help='selected recall')
     parser.add_argument('--batch_size', default=128, type=int, help='train batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epoch number')
-    parser.add_argument('--feature_dim', default=1536, type=int, help='feature dim')
 
     opt = parser.parse_args()
     # args parse
-    DATA_PATH, DATA_NAME, CROP_TYPE, RECALLS = opt.data_path, opt.data_name, opt.crop_type, opt.recalls
-    BATCH_SIZE, NUM_EPOCHS = opt.batch_size, opt.num_epochs
-    FEATURE_DIM = opt.feature_dim
-    save_name_pre = '{}_{}_{}'.format(DATA_NAME, CROP_TYPE, FEATURE_DIM)
-    recall_ids = [int(k) for k in RECALLS.split(',')]
+    DATA_PATH, DATA_NAME, CROP_TYPE, BACKBONE_TYPE = opt.data_path, opt.data_name, opt.crop_type, opt.backbone_type
+    GD_CONFIG, FEATURE_DIM, TEMPERATURE = opt.gd_config, opt.feature_dim, opt.temperature
+    MARGIN, RECALLS, BATCH_SIZE = opt.margin, [int(k) for k in opt.recalls.split(',')], opt.batch_size
+    NUM_EPOCHS = opt.num_epochs
+    save_name_pre = '{}_{}_{}_{}_{}_{}_{}'.format(DATA_NAME, CROP_TYPE, BACKBONE_TYPE, GD_CONFIG, FEATURE_DIM,
+                                                  TEMPERATURE, MARGIN)
 
     results = {'train_loss': [], 'train_accuracy': []}
-    for index, id in enumerate(recall_ids):
-        results['test_recall@{}'.format(recall_ids[index])] = []
+    for recall_id in RECALLS:
+        results['test_recall@{}'.format(recall_id)] = []
 
     # dataset loader
     # train_data_set = ImageReader(DATA_PATH, DATA_NAME, 'train', CROP_TYPE, ENSEMBLE_SIZE, META_CLASS_SIZE, LOAD_IDS)
@@ -109,7 +118,7 @@ if __name__ == '__main__':
         train_loss, train_accuracy = train(model, optimizer)
         results['train_loss'].append(train_loss)
         results['train_accuracy'].append(train_accuracy)
-        rank = eval(model, recall_ids)
+        rank = eval(model, recalls)
         lr_scheduler.step()
 
         # save statistics
