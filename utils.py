@@ -1,5 +1,7 @@
 import torch
 from PIL import Image
+from torch import nn
+from torch.nn import functional as F
 from torch.utils.data import Dataset
 from torchvision import transforms
 
@@ -61,3 +63,17 @@ def recall(feature_vectors, feature_labels, rank, gallery_vectors=None, gallery_
         correct = (gallery_labels[idx[:, 0:r]] == feature_labels.unsqueeze(dim=-1)).any(dim=-1).float()
         acc_list.append((torch.sum(correct) / num_features).item())
     return acc_list
+
+
+class LabelSmoothingCrossEntropyLoss(nn.Module):
+    def __init__(self, smoothing=0.1, temperature=1.0):
+        super().__init__()
+        self.smoothing = smoothing
+        self.temperature = temperature
+
+    def forward(self, x, target):
+        log_probs = F.log_softmax(x / self.temperature, dim=-1)
+        nll_loss = -log_probs.gather(dim=-1, index=target.unsqueeze(dim=-1)).squeeze(dim=-1)
+        smooth_loss = -log_probs.mean(dim=-1)
+        loss = (1.0 - self.smoothing) * nll_loss + self.smoothing * smooth_loss
+        return loss.mean()
