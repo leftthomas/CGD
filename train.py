@@ -13,7 +13,7 @@ from torchvision.transforms import ToPILImage
 from tqdm import tqdm
 
 from dataset import Cityscapes, palette
-from model import FastSCNN
+from model import Model
 
 
 # train or val for one epoch
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     val_data = Cityscapes(root=data_path, split='val')
     train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=4)
     val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=False, num_workers=4)
-    model = FastSCNN(in_channels=3, num_classes=19).cuda()
+    model = Model(in_channels=3, num_classes=19).cuda()
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
     # model profile and loss definition

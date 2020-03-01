@@ -1,187 +1,75 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
+from torchvision.models import resnet50, resnext50_32x4d
 
 
-class FastSCNN(nn.Module):
-    def __init__(self, in_channels, num_classes):
+class GlobalDescriptor(nn.Module):
+    def __init__(self, p=1):
         super().__init__()
-
-        self.learning_to_down_sample = LearningToDownSample(in_channels)
-        self.global_feature_extractor = GlobalFeatureExtractor()
-        self.feature_fusion = FeatureFusion(scale_factor=4)
-        self.classifier = Classifier(num_classes, scale_factor=8)
+        self.p = p
 
     def forward(self, x):
-        shared = self.learning_to_down_sample(x)
-        x = self.global_feature_extractor(shared)
-        x = self.feature_fusion(shared, x)
-        x = self.classifier(x)
-        return x
+        assert x.dim() == 4, 'the input tensor of GlobalDescriptor must be the shape of [B, C, H, W]'
+        return torch.norm(x, p=self.p, dim=[-1, -2])
 
 
-class LearningToDownSample(nn.Module):
-    def __init__(self, in_channels):
-        super().__init__()
-
-        self.conv = ConvBlock(in_channels=in_channels, out_channels=32, stride=2)
-        self.dsconv1 = nn.Sequential(
-            # depthwise convolution
-            nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1, dilation=1, groups=32, bias=False),
-            nn.BatchNorm2d(32),
-            # pointwise convolution
-            nn.Conv2d(32, 48, kernel_size=1, stride=1, padding=0, dilation=1, groups=1, bias=False),
-            nn.BatchNorm2d(48),
-            nn.ReLU(inplace=True))
-        self.dsconv2 = nn.Sequential(
-            nn.Conv2d(48, 48, kernel_size=3, stride=2, padding=1, dilation=1, groups=48, bias=False),
-            nn.BatchNorm2d(48),
-            nn.Conv2d(48, 64, kernel_size=1, stride=1, padding=0, dilation=1, groups=1, bias=False),
-            nn.BatchNorm2d(64),
-            nn.ReLU(inplace=True))
-
-    def forward(self, x):
-        x = self.conv(x)
-        x = self.dsconv1(x)
-        x = self.dsconv2(x)
-        return x
-
-
-class GlobalFeatureExtractor(nn.Module):
+class L2Norm(nn.Module):
     def __init__(self):
         super().__init__()
 
-        self.first_block = nn.Sequential(Bottleneck(64, 64, 2, 6),
-                                         Bottleneck(64, 64, 1, 6),
-                                         Bottleneck(64, 64, 1, 6))
-        self.second_block = nn.Sequential(Bottleneck(64, 96, 2, 6),
-                                          Bottleneck(96, 96, 1, 6),
-                                          Bottleneck(96, 96, 1, 6))
-        self.third_block = nn.Sequential(Bottleneck(96, 128, 1, 6),
-                                         Bottleneck(128, 128, 1, 6),
-                                         Bottleneck(128, 128, 1, 6))
-        self.ppm = PPMModule(128, 128)
+    def forward(self, x):
+        assert x.dim() == 2, 'the input tensor of L2Norm must be the shape of [B, C]'
+        return F.normalize(x, p=2, dim=-1)
+
+
+class Model(nn.Module):
+    def __init__(self, backbone_type, gd_config, feature_dim, num_classes):
+        super().__init__()
+
+        # Backbone Network
+        backbone = resnet50(pretrained=True) if backbone_type == 'resnet50' else resnext50_32x4d(pretrained=True)
+        self.features = []
+        for name, module in backbone.named_children():
+            # remove down sample for stage3
+            if name == 'layer3':
+                module = []
+                for child in module.children():
+                    print('x')
+            if isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
+                continue
+            self.features.append(module)
+        self.features = nn.Sequential(*self.features)
+
+        # Main Module
+        n = len(gd_config)
+        k = feature_dim // n
+        assert feature_dim % n == 0, 'the feature dim should be divided by number of global descriptors'
+
+        self.global_descriptors, self.main_modules = [], []
+        for i in range(n):
+            if gd_config[i] == 'S':
+                p = 1
+            elif gd_config[i] == 'M':
+                p = float('inf')
+            else:
+                p = 3
+            self.global_descriptors.append(GlobalDescriptor(p=p))
+            self.main_modules.append(nn.Sequential(nn.Linear(2048, k, bias=False), L2Norm()))
+        self.global_descriptors = nn.ModuleList(self.global_descriptors)
+        self.main_modules = nn.ModuleList(self.main_modules)
+
+        # Auxiliary Module
+        self.auxiliary_module = nn.Sequential(nn.BatchNorm1d(2048), nn.Linear(2048, num_classes, bias=True))
 
     def forward(self, x):
-        x = self.first_block(x)
-        x = self.second_block(x)
-        x = self.third_block(x)
-        x = self.ppm(x)
-        return x
-
-
-class FeatureFusion(nn.Module):
-    def __init__(self, scale_factor):
-        super().__init__()
-
-        self.scale_factor = scale_factor
-        self.conv_high_res = nn.Conv2d(64, 128, kernel_size=1, stride=1, padding=0, bias=True)
-
-        self.dwconv = ConvBlock(in_channels=128, out_channels=128, stride=1, padding=scale_factor,
-                                dilation=scale_factor, groups=128)
-        self.conv_low_res = nn.Conv2d(128, 128, kernel_size=1, stride=1, padding=0, bias=True)
-        self.relu = nn.ReLU(inplace=True)
-
-    def forward(self, high_res_input, low_res_input):
-        low_res_input = F.interpolate(input=low_res_input, scale_factor=self.scale_factor, mode='bilinear',
-                                      align_corners=True)
-        low_res_input = self.dwconv(low_res_input)
-        low_res_input = self.conv_low_res(low_res_input)
-
-        high_res_input = self.conv_high_res(high_res_input)
-        x = torch.add(high_res_input, low_res_input)
-        return self.relu(x)
-
-
-class Classifier(nn.Module):
-    def __init__(self, num_classes, scale_factor):
-        super().__init__()
-
-        self.scale_factor = scale_factor
-        self.dsconv1 = nn.Sequential(
-            # depthwise convolution
-            nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1, dilation=1, groups=128, bias=False),
-            nn.BatchNorm2d(128),
-            # pointwise convolution
-            nn.Conv2d(128, 128, kernel_size=1, stride=1, padding=0, dilation=1, groups=1, bias=False),
-            nn.BatchNorm2d(128),
-            nn.ReLU(inplace=True))
-        self.dsconv2 = nn.Sequential(
-            nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1, dilation=1, groups=128, bias=False),
-            nn.BatchNorm2d(128),
-            nn.Conv2d(128, 128, kernel_size=1, stride=1, padding=0, dilation=1, groups=1, bias=False),
-            nn.BatchNorm2d(128),
-            nn.ReLU(inplace=True))
-        self.drop_out = nn.Dropout(p=0.1)
-        self.conv = nn.Conv2d(128, num_classes, kernel_size=1, stride=1, padding=0, bias=True)
-
-    def forward(self, x):
-        x = self.dsconv1(x)
-        x = self.dsconv2(x)
-        x = self.drop_out(x)
-        x = self.conv(x)
-        x = F.interpolate(input=x, scale_factor=self.scale_factor, mode='bilinear', align_corners=True)
-        return x
-
-
-class ConvBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size=3, stride=2, padding=1, dilation=1, groups=1):
-        super().__init__()
-
-        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding,
-                              dilation=dilation, groups=groups, bias=False)
-        self.bn = nn.BatchNorm2d(out_channels)
-        self.relu = nn.ReLU(inplace=True)
-
-    def forward(self, input):
-        x = self.conv(input)
-        return self.relu(self.bn(x))
-
-
-class Bottleneck(nn.Module):
-    def __init__(self, in_channels, out_channels, stride, expand_ratio):
-        super().__init__()
-
-        hidden_dim = in_channels * expand_ratio
-        self.use_res_connect = stride == 1 and in_channels == out_channels
-
-        self.conv = nn.Sequential(
-            nn.Conv2d(in_channels, hidden_dim, 1, 1, 0, bias=False),
-            nn.BatchNorm2d(hidden_dim),
-            nn.ReLU(inplace=True),
-            # depthwise convolution
-            nn.Conv2d(hidden_dim, hidden_dim, 3, stride, 1, groups=hidden_dim, bias=False),
-            nn.BatchNorm2d(hidden_dim),
-            nn.ReLU(inplace=True),
-            # pw-linear
-            nn.Conv2d(hidden_dim, out_channels, 1, 1, 0, bias=False),
-            nn.BatchNorm2d(out_channels))
-
-    def forward(self, x):
-        if self.use_res_connect:
-            return x + self.conv(x)
-        else:
-            return self.conv(x)
-
-
-class PPMModule(nn.Module):
-    def __init__(self, in_channels, out_channels, sizes=(1, 2, 3, 6)):
-        super().__init__()
-
-        inter_channels = in_channels // len(sizes)
-        assert in_channels % len(sizes) == 0
-
-        self.stages = nn.ModuleList([self._make_stage(in_channels, inter_channels, size) for size in sizes])
-        self.conv = ConvBlock(in_channels * 2, out_channels, kernel_size=1, stride=1, padding=0)
-
-    def _make_stage(self, in_channels, inter_channels, size):
-        prior = nn.AdaptiveAvgPool2d(output_size=(size, size))
-        conv = ConvBlock(in_channels, inter_channels, kernel_size=1, stride=1, padding=0)
-        return nn.Sequential(prior, conv)
-
-    def forward(self, feats):
-        h, w = feats.size(2), feats.size(3)
-        priors = [F.interpolate(input=stage(feats), size=(h, w), mode='bilinear',
-                                align_corners=True) for stage in self.stages] + [feats]
-        bottle = self.conv(torch.cat(priors, dim=1))
-        return bottle
+        shared = self.features(x)
+        global_descriptors = []
+        for i in range(len(self.global_descriptors)):
+            global_descriptor = self.global_descriptors[i](shared)
+            if i == 0:
+                classes = self.auxiliary_module(global_descriptor)
+            global_descriptor = self.main_modules[i](global_descriptor)
+            global_descriptors.append(global_descriptor)
+        global_descriptors = torch.cat(global_descriptors, dim=-1)
+        return global_descriptors, classes
