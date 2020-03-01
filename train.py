@@ -9,7 +9,7 @@ from torch.optim.lr_scheduler import MultiStepLR
 from tqdm import tqdm
 
 from model import Model
-from utils import recall, LabelSmoothingCrossEntropyLoss
+from utils import recall, LabelSmoothingCrossEntropyLoss, BatchHardTripletLoss
 
 
 def train(net, optim):
@@ -19,7 +19,8 @@ def train(net, optim):
         inputs, labels = inputs.cuda(), labels.cuda()
         features, classes = net(inputs)
         class_loss = class_criterion(classes, labels)
-        loss = class_loss
+        feature_loss = feature_criterion(features, labels)
+        loss = class_loss + feature_loss
         optim.zero_grad()
         loss.backward()
         optim.step()
@@ -112,6 +113,7 @@ if __name__ == '__main__':
     optimizer = Adam(model.parameters(), lr=1e-4)
     lr_scheduler = MultiStepLR(optimizer, milestones=[int(0.6 * num_epochs), int(0.8 * num_epochs)], gamma=0.1)
     class_criterion = LabelSmoothingCrossEntropyLoss(smoothing=0.1, temperature=temperature)
+    feature_criterion = BatchHardTripletLoss(margin=margin)
 
     best_recall = 0.0
     for epoch in range(1, num_epochs + 1):
