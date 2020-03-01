@@ -70,5 +70,5 @@ class Model(nn.Module):
                 classes = self.auxiliary_module(global_descriptor)
             global_descriptor = self.main_modules[i](global_descriptor)
             global_descriptors.append(global_descriptor)
-        global_descriptors = torch.cat(global_descriptors, dim=-1)
+        global_descriptors = F.normalize(torch.cat(global_descriptors, dim=-1), dim=-1)
         return global_descriptors, classes
