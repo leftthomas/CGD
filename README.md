@@ -31,7 +31,7 @@ optional arguments:
 --data_name                   dataset name [default value is 'car'](choices=['car', 'cub', 'sop', 'isc'])
 --crop_type                   crop data or not, it only works for car or cub dataset [default value is 'uncropped'](choices=['uncropped', 'cropped'])
 --backbone_type               backbone network type [default value is 'resnet50'](choices=['resnet50', 'resnext50'])
---gd_config                   global descriptors config [default value is 'SM'](choices=['S', 'M', 'G', 'SM', 'MS', 'SG', 'GS', 'MG', 'GM', 'SMG', 'MSG', 'GSM'])
+--gd_config                   global descriptors config [default value is 'SG'](choices=['S', 'M', 'G', 'SM', 'MS', 'SG', 'GS', 'MG', 'GM', 'SMG', 'MSG', 'GSM'])
 --feature_dim                 feature dim [default value is 1536]
 --temperature                 temperature scaling used in softmax cross-entropy loss [default value is 0.5]
 --margin                      margin of m for triplet loss [default value is 0.1]
