@@ -1,7 +1,7 @@
 # CGD
 A PyTorch implementation of CGD based on the paper [Combination of Multiple Global Descriptors for Image Retrieval](https://arxiv.org/abs/1903.10663v3).
 
-![Network Architecture image from the paper](structure.png)
+![Network Architecture image from the paper](results/structure.png)
 
 ## Requirements
 - [Anaconda](https://www.anaconda.com/download/)
@@ -38,6 +38,15 @@ optional arguments:
 --recalls                     selected recall [default value is '1,2,4,8']
 --batch_size                  train batch size [default value is 128]
 --num_epochs                  train epoch number [default value is 100]
+```
+
+### Test CGD
+```
+python test.py --retrieval_num 10
+optional arguments:
+--query_img_name              query image name [default value is 'data/car/uncropped/008055.jpg']
+--data_base                   queried database [default value is 'car_uncropped_resnet50_data_base.pth']
+--retrieval_num               retrieval number [default value is 8]
 ```
 
 ## Benchmarks
@@ -210,3 +219,21 @@ is ![](http://latex.codecogs.com/gif.latex?f_c=\left(\frac{1}{\left&space;|\chi_
     </tr>
   </tbody>
 </table>
+
+## Results
+
+- CAR/CUB (Uncropped)
+
+![CAR/CUB_Uncropped](results/car_cub.png)
+
+- CAR/CUB (Cropped)
+
+![CAR/CUB_Cropped](results/car_cub_crop.png)
+
+- SOP
+
+![SOP](results/sop.png)
+
+- ISC
+
+![ISC](results/isc.png)

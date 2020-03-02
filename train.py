@@ -2,7 +2,6 @@ import argparse
 
 import pandas as pd
 import torch
-import torch.nn.functional as F
 from thop import profile, clever_format
 from torch.optim import Adam
 from torch.optim.lr_scheduler import MultiStepLR
@@ -29,13 +28,13 @@ def train(net, optim):
         total_loss += loss.item()
         total_correct += torch.sum(pred == labels).item()
         total_num += inputs.size(0)
-        data_bar.set_description('Epoch {}/{} - Loss:{:.4f} - Acc:{:.2f}%'
+        data_bar.set_description('Train Epoch {}/{} - Loss:{:.4f} - Acc:{:.2f}%'
                                  .format(epoch, num_epochs, total_loss / total_num, total_correct / total_num * 100))
 
     return total_loss / total_num, total_correct / total_num * 100
 
 
-def eval(net, recalls):
+def test(net, recall_ids):
     net.eval()
     with torch.no_grad():
         # obtain feature vectors for all data
@@ -43,21 +42,20 @@ def eval(net, recalls):
             eval_dict[key]['features'] = []
             for inputs, labels in tqdm(eval_dict[key]['data_loader'], desc='processing {} data'.format(key)):
                 inputs, labels = inputs.cuda(), labels.cuda()
-                features, out = net(inputs)
-                features = F.normalize(torch.sum(features, dim=1), dim=-1)
+                features, classes = net(inputs)
                 eval_dict[key]['features'].append(features)
             eval_dict[key]['features'] = torch.cat(eval_dict[key]['features'], dim=0)
 
     # compute recall metric
     if data_name == 'isc':
-        acc_list = recall(eval_dict['test']['features'], test_data_set.labels, recalls,
+        acc_list = recall(eval_dict['test']['features'], test_data_set.labels, recall_ids,
                           eval_dict['gallery']['features'], gallery_data_set.labels)
     else:
-        acc_list = recall(eval_dict['test']['features'], test_data_set.labels, recalls)
-    desc = ''
-    for index, id in enumerate(recalls):
-        desc += 'R@{}:{:.2f}% '.format(id, acc_list[index] * 100)
-        results['test_recall@{}'.format(recalls[index])].append(acc_list[index] * 100)
+        acc_list = recall(eval_dict['test']['features'], test_data_set.labels, recall_ids)
+    desc = 'Test Epoch {}/{} '.format(epoch, num_epochs)
+    for index, rank_id in enumerate(recall_ids):
+        desc += 'R@{}:{:.2f}% '.format(rank_id, acc_list[index] * 100)
+        results['test_recall@{}'.format(rank_id)].append(acc_list[index] * 100)
     print(desc)
     return acc_list[0]
 
@@ -121,7 +119,7 @@ if __name__ == '__main__':
         train_loss, train_accuracy = train(model, optimizer)
         results['train_loss'].append(train_loss)
         results['train_accuracy'].append(train_accuracy)
-        rank = eval(model, recalls)
+        rank = test(model, recalls)
         lr_scheduler.step()
 
         # save statistics
