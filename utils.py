@@ -38,20 +38,17 @@ class ImageReader(Dataset):
 def recall(feature_vectors, feature_labels, rank, gallery_vectors=None, gallery_labels=None):
     num_features = len(feature_labels)
     feature_labels = torch.tensor(feature_labels, device=feature_vectors.device)
-    if gallery_vectors is None:
-        gallery_vectors = feature_vectors.t().contiguous()
-    else:
-        gallery_vectors = gallery_vectors.t().contiguous()
-
-    sim_matrix = feature_vectors.mm(gallery_vectors)
+    gallery_vectors = feature_vectors if gallery_vectors is None else gallery_vectors
+    # [N_f, N_g]
+    dist_matrix = torch.cdist(feature_vectors.unsqueeze(0), gallery_vectors.unsqueeze(0)).squeeze(0)
 
     if gallery_labels is None:
-        sim_matrix[torch.eye(num_features, device=feature_vectors.device).bool()] = -1
+        dist_matrix[torch.eye(num_features, device=feature_vectors.device).bool()] = float('inf')
         gallery_labels = feature_labels
     else:
         gallery_labels = torch.tensor(gallery_labels, device=feature_vectors.device)
 
-    idx = sim_matrix.argsort(dim=-1, descending=True)
+    idx = dist_matrix.argsort(dim=-1, descending=False)
     acc_list = []
     for r in rank:
         correct = (gallery_labels[idx[:, 0:r]] == feature_labels.unsqueeze(dim=-1)).any(dim=-1).float()
@@ -100,6 +97,7 @@ class BatchHardTripletLoss(nn.Module):
 
         mask_anchor_negative = self.get_anchor_negative_triplet_mask(target)
         contains_anchor_negative = mask_anchor_negative.any(dim=-1, keepdim=True)
+        # make positive and anchor to be exclusive through maximizing the dist
         max_anchor_negative_dist = pairwise_dist.max(1, True)[0]
         anchor_negative_dist = pairwise_dist + max_anchor_negative_dist * (1.0 - mask_anchor_negative.float())
         hardest_negative_dist = anchor_negative_dist.min(1, True)[0]
