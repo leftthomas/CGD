@@ -78,7 +78,7 @@ if __name__ == '__main__':
     parser.add_argument('--margin', default=0.1, type=float, help='margin of m for triplet loss')
     parser.add_argument('--recalls', default='1,2,4,8', type=str, help='selected recall')
     parser.add_argument('--batch_size', default=128, type=int, help='train batch size')
-    parser.add_argument('--num_epochs', default=100, type=int, help='train epoch number')
+    parser.add_argument('--num_epochs', default=20, type=int, help='train epoch number')
 
     opt = parser.parse_args()
     # args parse

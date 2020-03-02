@@ -110,4 +110,4 @@ class BatchHardTripletLoss(nn.Module):
 
         triplet_loss = F.relu(hardest_positive_dist - hardest_negative_dist + self.margin)
 
-        return triplet_loss.mean()
+        return triplet_loss.sum()

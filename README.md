@@ -37,7 +37,7 @@ optional arguments:
 --margin                      margin of m for triplet loss [default value is 0.1]
 --recalls                     selected recall [default value is '1,2,4,8']
 --batch_size                  train batch size [default value is 128]
---num_epochs                  train epoch number [default value is 100]
+--num_epochs                  train epoch number [default value is 20]
 ```
 
 ### Test CGD
@@ -50,7 +50,7 @@ optional arguments:
 ```
 
 ## Benchmarks
-The models are trained on one NVIDIA Tesla V100 (32G) GPU with 100 epochs, the learning rate is decayed by 10 on 60th and 80th epoch.
+The models are trained on one NVIDIA Tesla V100 (32G) GPU with 20 epochs, the learning rate is decayed by 10 on 12th and 16th epoch.
 
 This implement has one small difference with the paper, in the paper, the generation method of Global Descriptors 
 is ![](http://latex.codecogs.com/gif.latex?f_c=\left(\frac{1}{\left&space;|\chi_{c}\right&space;|}\sum_{x&space;\in&space;\chi_{c}}x^{p_c}\right)^\frac{1}{p_c}), but in this repo is 
@@ -71,14 +71,14 @@ is ![](http://latex.codecogs.com/gif.latex?f_c=\left(\frac{1}{\left&space;|\chi_
   <tbody>
     <tr>
       <td align="center">ResNet50</td>
-      <td align="center">52M/6.54G</td>
+      <td align="center">26.86M/10.64G</td>
       <td align="center">52M/6.54G</td>
       <td align="center">52M/6.54G</td>
       <td align="center">52M/6.54G</td>
     </tr>
     <tr>
       <td align="center">ResNeXt50</td>
-      <td align="center">52M/6.54G</td>
+      <td align="center">26.33M/10.84G</td>
       <td align="center">52M/6.54G</td>
       <td align="center">52M/6.54G</td>
       <td align="center">52M/6.54G</td>
