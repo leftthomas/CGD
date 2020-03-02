@@ -5,11 +5,6 @@ from torch.nn import functional as F
 from torch.utils.data import Dataset
 from torchvision import transforms
 
-rgb_mean = {'car': [0.4853, 0.4965, 0.4295], 'cub': [0.4707, 0.4601, 0.4549], 'sop': [0.5807, 0.5396, 0.5044],
-            'isc': [0.8324, 0.8109, 0.8041]}
-rgb_std = {'car': [0.2237, 0.2193, 0.2568], 'cub': [0.2767, 0.2760, 0.2850], 'sop': [0.2901, 0.2974, 0.3095],
-           'isc': [0.2206, 0.2378, 0.2444]}
-
 
 class ImageReader(Dataset):
 
@@ -20,7 +15,7 @@ class ImageReader(Dataset):
         data_dict = torch.load('{}/{}/{}_data_dicts.pth'.format(data_path, data_name, crop_type))[
             'train' if data_type == 'train_ext' else data_type]
         self.class_to_idx = dict(zip(sorted(data_dict), range(len(data_dict))))
-        normalize = transforms.Normalize(rgb_mean[data_name], rgb_std[data_name])
+        normalize = transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         if data_type == 'train':
             self.transform = transforms.Compose([transforms.Resize((252, 252)), transforms.RandomCrop(224),
                                                  transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize])

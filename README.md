@@ -69,7 +69,7 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
     <tr>
       <td align="center">ResNet50</td>
       <td align="center">26.86M/10.64G</td>
-      <td align="center">52M/6.54G</td>
+      <td align="center">26.86M/10.64G</td>
       <td align="center">52M/6.54G</td>
       <td align="center">52M/6.54G</td>
     </tr>
