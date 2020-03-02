@@ -5,6 +5,12 @@ from torch.nn import functional as F
 from resnet import resnet50, resnext50_32x4d
 
 
+def set_bn_eval(m):
+    classname = m.__class__.__name__
+    if classname.find('BatchNorm2d') != -1:
+        m.eval()
+
+
 class GlobalDescriptor(nn.Module):
     def __init__(self, p=1):
         super().__init__()

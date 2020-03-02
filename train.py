@@ -8,12 +8,14 @@ from torch.optim.lr_scheduler import MultiStepLR
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from model import Model
+from model import Model, set_bn_eval
 from utils import recall, LabelSmoothingCrossEntropyLoss, BatchHardTripletLoss, ImageReader
 
 
 def train(net, optim):
     net.train()
+    # fix bn on backbone network
+    net.apply(set_bn_eval)
     total_loss, total_correct, total_num, data_bar = 0, 0, 0, tqdm(train_data_loader)
     for inputs, labels in data_bar:
         inputs, labels = inputs.cuda(), labels.cuda()
