@@ -25,7 +25,7 @@ You should download these datasets by yourself, and extract them into `${data_pa
 ## Usage
 ### Train CGD
 ```
-python train.py --feature_dim 512 --gd_config SG
+python train.py --feature_dim 512 --gd_config SM
 optional arguments:
 --data_path                   datasets path [default value is '/home/data']
 --data_name                   dataset name [default value is 'car'](choices=['car', 'cub', 'sop', 'isc'])
