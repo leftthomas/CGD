@@ -18,7 +18,12 @@ class GlobalDescriptor(nn.Module):
 
     def forward(self, x):
         assert x.dim() == 4, 'the input tensor of GlobalDescriptor must be the shape of [B, C, H, W]'
-        return ((1.0 / (x.size(-1) * x.size(-2))) ** (1.0 / self.p)) * x.norm(p=self.p, dim=[-1, -2])
+        if self.p == 1:
+            return x.mean(dim=[-1, -2])
+        elif self.p == float('inf'):
+            return torch.flatten(F.adaptive_max_pool2d(x, output_size=(1, 1)), start_dim=1)
+        else:
+            return (x.pow(self.p).mean(dim=[-1, -2])).clamp(min=0.0) ** (1.0 / self.p)
 
     def extra_repr(self):
         return 'p={}'.format(self.p)
