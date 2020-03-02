@@ -69,7 +69,7 @@ if __name__ == '__main__':
                         help='crop data or not, it only works for car or cub dataset')
     parser.add_argument('--backbone_type', default='resnet50', type=str, choices=['resnet50', 'resnext50'],
                         help='backbone network type')
-    parser.add_argument('--gd_config', default='SM', type=str,
+    parser.add_argument('--gd_config', default='SG', type=str,
                         choices=['S', 'M', 'G', 'SM', 'MS', 'SG', 'GS', 'MG', 'GM', 'SMG', 'MSG', 'GSM'],
                         help='global descriptors config')
     parser.add_argument('--feature_dim', default=1536, type=int, help='feature dim')
