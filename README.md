@@ -50,12 +50,8 @@ optional arguments:
 ```
 
 ## Benchmarks
-The models are trained on one NVIDIA Tesla V100 (32G) GPU with 20 epochs, the learning rate is decayed by 10 on 12th and 16th epoch.
-
-This implement has one small difference with the paper, in the paper, the generation method of Global Descriptors 
-is ![](http://latex.codecogs.com/gif.latex?f_c=\left(\frac{1}{\left&space;|\chi_{c}\right&space;|}\sum_{x&space;\in&space;\chi_{c}}x^{p_c}\right)^\frac{1}{p_c}), but in this repo is 
-![](http://latex.codecogs.com/gif.latex?f_c=\left(\sum_{x&space;\in&space;\chi_{c}}\left|x\right|^{p_c}\right)^\frac{1}{p_c}).
-
+The models are trained on one NVIDIA Tesla V100 (32G) GPU with 20 epochs, 
+the learning rate is decayed by 10 on 12th and 16th epoch.
 
 ### Model Parameters and FLOPs (Params/FLOPs)
 <table>
