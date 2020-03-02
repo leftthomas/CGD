@@ -19,7 +19,7 @@ class ImageReader(Dataset):
 
         data_dict = torch.load('{}/{}/{}_data_dicts.pth'.format(data_path, data_name, crop_type))[
             'train' if data_type == 'train_ext' else data_type]
-        class_to_idx = dict(zip(sorted(data_dict), range(len(data_dict))))
+        self.class_to_idx = dict(zip(sorted(data_dict), range(len(data_dict))))
         normalize = transforms.Normalize(rgb_mean[data_name], rgb_std[data_name])
         if data_type == 'train':
             self.transform = transforms.Compose([transforms.Resize((252, 252)), transforms.RandomCrop(224),
@@ -29,7 +29,7 @@ class ImageReader(Dataset):
         self.images, self.labels = [], []
         for label, image_list in data_dict.items():
             self.images += image_list
-            self.labels += [class_to_idx[label]] * len(image_list)
+            self.labels += [self.class_to_idx[label]] * len(image_list)
 
     def __getitem__(self, index):
         path, target = self.images[index], self.labels[index]

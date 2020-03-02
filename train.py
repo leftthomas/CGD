@@ -6,10 +6,11 @@ import torch.nn.functional as F
 from thop import profile, clever_format
 from torch.optim import Adam
 from torch.optim.lr_scheduler import MultiStepLR
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from model import Model
-from utils import recall, LabelSmoothingCrossEntropyLoss, BatchHardTripletLoss
+from utils import recall, LabelSmoothingCrossEntropyLoss, BatchHardTripletLoss, ImageReader
 
 
 def train(net, optim):
@@ -87,26 +88,26 @@ if __name__ == '__main__':
     gd_config, feature_dim, temperature = opt.gd_config, opt.feature_dim, opt.temperature
     margin, recalls, batch_size = opt.margin, [int(k) for k in opt.recalls.split(',')], opt.batch_size
     num_epochs = opt.num_epochs
-    save_name_pre = '{}_{}_{}_{}_{}_{}_{}'.format(data_name, crop_type, backbone_type, gd_config, feature_dim,
-                                                  temperature, margin)
+    save_name_pre = '{}_{}_{}_{}_{}_{}_{}_{}'.format(data_name, crop_type, backbone_type, gd_config, feature_dim,
+                                                     temperature, margin, batch_size)
 
     results = {'train_loss': [], 'train_accuracy': []}
     for recall_id in recalls:
         results['test_recall@{}'.format(recall_id)] = []
 
     # dataset loader
-    train_data_set = ImageReader(data_path, data_name, 'train', crop_type, ENSEMBLE_SIZE, META_CLASS_SIZE, LOAD_IDS)
-    train_data_loader = DataLoader(train_data_set, batch_size, shuffle=True, num_workers=16)
+    train_data_set = ImageReader(data_path, data_name, 'train', crop_type)
+    train_data_loader = DataLoader(train_data_set, batch_size, shuffle=True, num_workers=8)
     test_data_set = ImageReader(data_path, data_name, 'query' if data_name == 'isc' else 'test', crop_type)
-    test_data_loader = DataLoader(test_data_set, batch_size, shuffle=False, num_workers=16)
+    test_data_loader = DataLoader(test_data_set, batch_size, shuffle=False, num_workers=8)
     eval_dict = {'test': {'data_loader': test_data_loader}}
     if data_name == 'isc':
         gallery_data_set = ImageReader(data_path, data_name, 'gallery', crop_type)
-        gallery_data_loader = DataLoader(gallery_data_set, batch_size, shuffle=False, num_workers=16)
+        gallery_data_loader = DataLoader(gallery_data_set, batch_size, shuffle=False, num_workers=8)
         eval_dict['gallery'] = {'data_loader': gallery_data_loader}
 
     # model setup, model profile, optimizer config and loss definition
-    model = Model(backbone_type, gd_config, feature_dim, num_classes=98).cuda()
+    model = Model(backbone_type, gd_config, feature_dim, num_classes=len(train_data_set.class_to_idx)).cuda()
     flops, params = profile(model, inputs=(torch.randn(1, 3, 224, 224).cuda(),))
     flops, params = clever_format([flops, params])
     print('# Model Params: {} FLOPs: {}'.format(params, flops))
@@ -133,9 +134,9 @@ if __name__ == '__main__':
             data_base['test_images'] = test_data_set.images
             data_base['test_labels'] = test_data_set.labels
             data_base['test_features'] = eval_dict['test']['features']
-            data_base['gallery_images'] = gallery_data_set.images if data_name == 'isc' else test_data_set.images
-            data_base['gallery_labels'] = gallery_data_set.labels if data_name == 'isc' else test_data_set.labels
-            data_base['gallery_features'] = eval_dict['gallery']['features'] \
-                if data_name == 'isc' else eval_dict['test']['features']
+            if data_name == 'isc':
+                data_base['gallery_images'] = gallery_data_set.images
+                data_base['gallery_labels'] = gallery_data_set.labels
+                data_base['gallery_features'] = eval_dict['gallery']['features']
             torch.save(model.state_dict(), 'results/{}_model.pth'.format(save_name_pre))
             torch.save(data_base, 'results/{}_data_base.pth'.format(save_name_pre))
