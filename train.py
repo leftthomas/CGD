@@ -75,6 +75,7 @@ if __name__ == '__main__':
                         choices=['S', 'M', 'G', 'SM', 'MS', 'SG', 'GS', 'MG', 'GM', 'SMG', 'MSG', 'GSM'],
                         help='global descriptors config')
     parser.add_argument('--feature_dim', default=1536, type=int, help='feature dim')
+    parser.add_argument('--smoothing', default=0.1, type=float, help='smoothing value for label smoothing')
     parser.add_argument('--temperature', default=0.5, type=float,
                         help='temperature scaling used in softmax cross-entropy loss')
     parser.add_argument('--margin', default=0.1, type=float, help='margin of m for triplet loss')
@@ -85,11 +86,11 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     # args parse
     data_path, data_name, crop_type, backbone_type = opt.data_path, opt.data_name, opt.crop_type, opt.backbone_type
-    gd_config, feature_dim, temperature = opt.gd_config, opt.feature_dim, opt.temperature
+    gd_config, feature_dim, smoothing, temperature = opt.gd_config, opt.feature_dim, opt.smoothing, opt.temperature
     margin, recalls, batch_size = opt.margin, [int(k) for k in opt.recalls.split(',')], opt.batch_size
     num_epochs = opt.num_epochs
-    save_name_pre = '{}_{}_{}_{}_{}_{}_{}_{}'.format(data_name, crop_type, backbone_type, gd_config, feature_dim,
-                                                     temperature, margin, batch_size)
+    save_name_pre = '{}_{}_{}_{}_{}_{}_{}_{}_{}'.format(data_name, crop_type, backbone_type, gd_config, feature_dim,
+                                                        smoothing, temperature, margin, batch_size)
 
     results = {'train_loss': [], 'train_accuracy': []}
     for recall_id in recalls:
@@ -113,7 +114,7 @@ if __name__ == '__main__':
     print('# Model Params: {} FLOPs: {}'.format(params, flops))
     optimizer = Adam(model.parameters(), lr=1e-4)
     lr_scheduler = MultiStepLR(optimizer, milestones=[int(0.6 * num_epochs), int(0.8 * num_epochs)], gamma=0.1)
-    class_criterion = LabelSmoothingCrossEntropyLoss(smoothing=0.1, temperature=temperature)
+    class_criterion = LabelSmoothingCrossEntropyLoss(smoothing=smoothing, temperature=temperature)
     feature_criterion = BatchHardTripletLoss(margin=margin)
 
     best_recall = 0.0
