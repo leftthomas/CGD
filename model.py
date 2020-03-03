@@ -23,7 +23,8 @@ class GlobalDescriptor(nn.Module):
         elif self.p == float('inf'):
             return torch.flatten(F.adaptive_max_pool2d(x, output_size=(1, 1)), start_dim=1)
         else:
-            return (x.pow(self.p).mean(dim=[-1, -2])).clamp(min=0.0) ** (1.0 / self.p)
+            sum_value = x.pow(self.p).mean(dim=[-1, -2])
+            return torch.sign(sum_value) * (torch.abs(sum_value).pow(1.0 / self.p))
 
     def extra_repr(self):
         return 'p={}'.format(self.p)
