@@ -68,17 +68,17 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
   <tbody>
     <tr>
       <td align="center">ResNet50</td>
-      <td align="center">26.86M/10.64G</td>
-      <td align="center">26.86M/10.64G</td>
-      <td align="center">49.85M/10.69G</td>
-      <td align="center">34.85M/10.66G</td>
+      <td align="center">26.86M | 10.64G</td>
+      <td align="center">26.86M | 10.64G</td>
+      <td align="center">49.85M | 10.69G</td>
+      <td align="center">34.85M | 10.66G</td>
     </tr>
     <tr>
       <td align="center">ResNeXt50</td>
-      <td align="center">26.33M/10.84G</td>
-      <td align="center">26.33M/10.84G</td>
-      <td align="center">49.32M/10.89G</td>
-      <td align="center">34.32M/10.86G</td>
+      <td align="center">26.33M | 10.84G</td>
+      <td align="center">26.33M | 10.84G</td>
+      <td align="center">49.32M | 10.89G</td>
+      <td align="center">34.32M | 10.86G</td>
     </tr>
   </tbody>
 </table>
@@ -98,19 +98,19 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
   <tbody>
     <tr>
       <td align="center">ResNet50(SG)</td>
-      <td align="center">86.41%/92.42%</td>
-      <td align="center">92.13%/96.10%</td>
-      <td align="center">95.55%/97.79%</td>
-      <td align="center">97.50%/98.66%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1W3-QKVe5HpCAHJTgxI1M5Q">model</a>&nbsp;|&nbsp;r3sn/<a href="https://pan.baidu.com/s/171Wqa-1TNquzedjlFhaYGg">model</a>&nbsp;|&nbsp;sf5s</td>
+      <td align="center">86.4% | 92.4%</td>
+      <td align="center">92.1% | 96.1%</td>
+      <td align="center">95.6% | 97.8%</td>
+      <td align="center">97.5% | 98.7%</td>
+      <td align="center"><a href="https://pan.baidu.com/s/1W3-QKVe5HpCAHJTgxI1M5Q">model</a>&nbsp;|&nbsp;r3sn | <a href="https://pan.baidu.com/s/171Wqa-1TNquzedjlFhaYGg">model</a>&nbsp;|&nbsp;sf5s</td>
     </tr>
     <tr>
       <td align="center">ResNeXt50(SG)</td>
-      <td align="center">86.42%/91.66%</td>
-      <td align="center">92.02%/95.35%</td>
-      <td align="center">95.41%/97.27%</td>
-      <td align="center">97.58%/98.57%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1pdp6ePxaxcvGbdlOz1Kmtg">model</a>&nbsp;|&nbsp;dsdx/<a href="https://pan.baidu.com/s/1_dpDM4FNkzPYPvmOsTTR1w">model</a>&nbsp;|&nbsp;fh72</td>
+      <td align="center">86.4% | 91.7%</td>
+      <td align="center">92.0% | 95.4%</td>
+      <td align="center">95.4% | 97.3%</td>
+      <td align="center">97.6% | 98.6%</td>
+      <td align="center"><a href="https://pan.baidu.com/s/1pdp6ePxaxcvGbdlOz1Kmtg">model</a>&nbsp;|&nbsp;dsdx | <a href="https://pan.baidu.com/s/1_dpDM4FNkzPYPvmOsTTR1w">model</a>&nbsp;|&nbsp;fh72</td>
     </tr>
   </tbody>
 </table>
@@ -130,19 +130,19 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
   <tbody>
     <tr>
       <td align="center">ResNet50(MG)</td>
-      <td align="center">66.00%/73.90%</td>
-      <td align="center">76.38%/83.12%</td>
-      <td align="center">84.81%/89.62%</td>
-      <td align="center">90.73%/94.02%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1_Ij-bYHZC31cxEWUnYwqwQ">model</a>&nbsp;|&nbsp;2cfi/<a href="https://pan.baidu.com/s/1deaYb2RWHikztHHsbJyuNw">model</a>&nbsp;|&nbsp;pi4q</td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center">76.4% | 83.1%</td>
+      <td align="center">84.8% | 89.6%</td>
+      <td align="center">90.7% | 94.0%</td>
+      <td align="center"><a href="https://pan.baidu.com/s/1_Ij-bYHZC31cxEWUnYwqwQ">model</a>&nbsp;|&nbsp;2cfi | <a href="https://pan.baidu.com/s/1deaYb2RWHikztHHsbJyuNw">model</a>&nbsp;|&nbsp;pi4q</td>
     </tr>
     <tr>
       <td align="center">ResNeXt50(MG)</td>
-      <td align="center">66.10%/73.73%</td>
-      <td align="center">76.32%/82.60%</td>
-      <td align="center">84.00%/89.01%</td>
-      <td align="center">90.09%/93.32%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1BvhZIBXj9M-Ro9BLmI2lmg">model</a>&nbsp;|&nbsp;nm9h/<a href="https://pan.baidu.com/s/1lu7SYe3tLhp2v1kkI5fO9w">model</a>&nbsp;|&nbsp;6mkf</td>
+      <td align="center">66.1% | 73.7%</td>
+      <td align="center">76.3% | 82.6%</td>
+      <td align="center">84.0% | 89.0%</td>
+      <td align="center">90.1% | 93.3%</td>
+      <td align="center"><a href="https://pan.baidu.com/s/1BvhZIBXj9M-Ro9BLmI2lmg">model</a>&nbsp;|&nbsp;nm9h | <a href="https://pan.baidu.com/s/1lu7SYe3tLhp2v1kkI5fO9w">model</a>&nbsp;|&nbsp;6mkf</td>
     </tr>
   </tbody>
 </table>
