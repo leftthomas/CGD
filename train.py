@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from model import Model, set_bn_eval
-from utils import recall, LabelSmoothingCrossEntropyLoss, BatchHardTripletLoss, ImageReader
+from utils import recall, LabelSmoothingCrossEntropyLoss, BatchHardTripletLoss, ImageReader, MPerClassSampler
 
 
 def train(net, optim):
@@ -98,7 +98,8 @@ if __name__ == '__main__':
 
     # dataset loader
     train_data_set = ImageReader(data_path, data_name, 'train', crop_type)
-    train_data_loader = DataLoader(train_data_set, batch_size, shuffle=True, num_workers=8, drop_last=True)
+    train_sample = MPerClassSampler(train_data_set.labels, batch_size)
+    train_data_loader = DataLoader(train_data_set, batch_sampler=train_sample, num_workers=8)
     test_data_set = ImageReader(data_path, data_name, 'query' if data_name == 'isc' else 'test', crop_type)
     test_data_loader = DataLoader(test_data_set, batch_size, shuffle=False, num_workers=8)
     eval_dict = {'test': {'data_loader': test_data_loader}}
