@@ -219,18 +219,10 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
 
 ## Results
 
-- CAR/CUB (Uncropped)
+- CAR/CUB (Uncropped | Cropped)
 
-![CAR/CUB_Uncropped](results/car_cub.png)
+![CAR/CUB](results/car_cub.png)
 
-- CAR/CUB (Cropped)
+- SOP/ISC
 
-![CAR/CUB_Cropped](results/car_cub_crop.png)
-
-- SOP
-
-![SOP](results/sop.png)
-
-- ISC
-
-![ISC](results/isc.png)
+![SOP/ISC](results/sop_isc.png)
