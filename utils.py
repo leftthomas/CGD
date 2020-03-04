@@ -41,8 +41,12 @@ def recall(feature_vectors, feature_labels, rank, gallery_vectors=None, gallery_
     num_features = len(feature_labels)
     feature_labels = torch.tensor(feature_labels, device=feature_vectors.device)
     gallery_vectors = feature_vectors if gallery_vectors is None else gallery_vectors
+    # avoid OOM error
+    dist_matrix = []
+    for feature_vector in torch.chunk(feature_vectors, chunks=2, dim=0):
+        dist_matrix.append(torch.cdist(feature_vector.unsqueeze(0), gallery_vectors.unsqueeze(0)).squeeze(0))
     # [N_f, N_g]
-    dist_matrix = torch.cdist(feature_vectors.unsqueeze(0), gallery_vectors.unsqueeze(0)).squeeze(0)
+    dist_matrix = torch.cat(dist_matrix, dim=0)
 
     if gallery_labels is None:
         dist_matrix[torch.eye(num_features, device=feature_vectors.device).bool()] = float('inf')
