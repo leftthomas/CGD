@@ -43,7 +43,7 @@ def recall(feature_vectors, feature_labels, rank, gallery_vectors=None, gallery_
     gallery_vectors = feature_vectors if gallery_vectors is None else gallery_vectors
     # avoid OOM error
     dist_matrix = []
-    for feature_vector in torch.chunk(feature_vectors, chunks=32, dim=0):
+    for feature_vector in torch.chunk(feature_vectors, chunks=64, dim=0):
         dist_matrix.append(torch.cdist(feature_vector.unsqueeze(0), gallery_vectors.unsqueeze(0)).squeeze(0))
     # [N_f, N_g]
     dist_matrix = torch.cat(dist_matrix, dim=0)
