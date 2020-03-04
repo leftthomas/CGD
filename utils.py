@@ -6,6 +6,7 @@ from torch.nn import functional as F
 from torch.utils.data import Dataset
 from torch.utils.data.sampler import Sampler
 from torchvision import transforms
+from tqdm import tqdm
 
 
 class ImageReader(Dataset):
@@ -45,7 +46,8 @@ def recall(feature_vectors, feature_labels, rank, gallery_vectors=None, gallery_
     if chunks:
         # avoid OOM error
         dist_matrix = []
-        for feature_vector in torch.chunk(feature_vectors, chunks=128, dim=0):
+        for feature_vector in tqdm(torch.chunk(feature_vectors, chunks=2048, dim=0),
+                                   desc='compute distance matrix for each chunk'):
             dist_matrix.append(torch.cdist(feature_vector.unsqueeze(0), gallery_vectors.unsqueeze(0)).squeeze(0))
         # [N_f, N_g]
         dist_matrix = torch.cat(dist_matrix, dim=0)
@@ -53,7 +55,7 @@ def recall(feature_vectors, feature_labels, rank, gallery_vectors=None, gallery_
         dist_matrix = torch.cdist(feature_vectors.unsqueeze(0), gallery_vectors.unsqueeze(0)).squeeze(0)
 
     if gallery_labels is None:
-        dist_matrix[torch.eye(num_features, device=feature_vectors.device).bool()] = float('inf')
+        dist_matrix.fill_diagonal_(float('inf'))
         gallery_labels = feature_labels
     else:
         gallery_labels = torch.tensor(gallery_labels, device=feature_vectors.device)
@@ -88,7 +90,7 @@ class BatchHardTripletLoss(nn.Module):
     @staticmethod
     def get_anchor_positive_triplet_mask(target):
         mask = torch.eq(target.unsqueeze(0), target.unsqueeze(1))
-        mask[torch.eye(target.size(0), device=target.device).bool()] = False
+        mask.fill_diagonal_(False)
         return mask
 
     @staticmethod
