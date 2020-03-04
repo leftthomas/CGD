@@ -166,7 +166,7 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
       <td align="center">66.0%</td>
       <td align="center">66.0%</td>
       <td align="center">66.0%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1BvhZIBXj9M-Ro9BLmI2lmg">nm9h</a></td>
+      <td align="center"><a href="https://pan.baidu.com/s/17I2nQMK5XBXL1XhiZ2elAg">qgsn</a></td>
     </tr>
     <tr>
       <td align="center">ResNeXt50(SG)</td>
@@ -174,7 +174,7 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
       <td align="center">66.0%</td>
       <td align="center">66.0%</td>
       <td align="center">66.0%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1BvhZIBXj9M-Ro9BLmI2lmg">nm9h</a></td>
+      <td align="center"><a href="https://pan.baidu.com/s/1rAGMchtLNTdQQxDWD6ruOg">uexd</a></td>
     </tr>
   </tbody>
 </table>
