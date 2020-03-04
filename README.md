@@ -54,7 +54,7 @@ optional arguments:
 The models are trained on one NVIDIA Tesla V100 (32G) GPU with 20 epochs, 
 the learning rate is decayed by 10 on 12th and 16th epoch.
 
-### Model Parameters and FLOPs (Params/FLOPs)
+### Model Parameters and FLOPs (Params | FLOPs)
 <table>
   <thead>
     <tr>
@@ -83,7 +83,7 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
   </tbody>
 </table>
 
-### CARS196 (Uncropped/Cropped)
+### CARS196 (Uncropped | Cropped)
 <table>
   <thead>
     <tr>
@@ -115,7 +115,7 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
   </tbody>
 </table>
 
-### CUB200 (Uncropped/Cropped)
+### CUB200 (Uncropped | Cropped)
 <table>
   <thead>
     <tr>
@@ -162,19 +162,19 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
   <tbody>
     <tr>
       <td align="center">ResNet50(SG)</td>
-      <td align="center">85.3%</td>
-      <td align="center">90.7%</td>
-      <td align="center">93.9%</td>
-      <td align="center">96.8%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1_xaiZKwHp3BAp0U1K1ImrQ">vsps</a></td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center"><a href="https://pan.baidu.com/s/1BvhZIBXj9M-Ro9BLmI2lmg">nm9h</a> | <a href="https://pan.baidu.com/s/1lu7SYe3tLhp2v1kkI5fO9w">6mkf</a></td>
     </tr>
     <tr>
       <td align="center">ResNeXt50(SG)</td>
-      <td align="center">87.8%</td>
-      <td align="center">93.2%</td>
-      <td align="center">96.0%</td>
-      <td align="center">98.1%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1HCzf6ROjePEyKWs-h3kDsA">8588</a></td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center"><a href="https://pan.baidu.com/s/1BvhZIBXj9M-Ro9BLmI2lmg">nm9h</a> | <a href="https://pan.baidu.com/s/1lu7SYe3tLhp2v1kkI5fO9w">6mkf</a></td>
     </tr>
   </tbody>
 </table>
@@ -196,23 +196,23 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
   <tbody>
     <tr>
       <td align="center">ResNet50(GS)</td>
-      <td align="center">78.7%</td>
-      <td align="center">93.2%</td>
-      <td align="center">95.2%</td>
-      <td align="center">96.1%</td>
-      <td align="center">96.7%</td>
-      <td align="center">97.0%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1yqwTTiGKWnZfkoSZs1LuvQ">6dh2</a></td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center"><a href="https://pan.baidu.com/s/1BvhZIBXj9M-Ro9BLmI2lmg">nm9h</a> | <a href="https://pan.baidu.com/s/1lu7SYe3tLhp2v1kkI5fO9w">6mkf</a></td>
     </tr>
     <tr>
       <td align="center">ResNeXt50(GS)</td>
-      <td align="center">87.7%</td>
-      <td align="center">96.7%</td>
-      <td align="center">97.7%</td>
-      <td align="center">98.1%</td>
-      <td align="center">98.4%</td>
-      <td align="center">98.6%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1Kf0Tq_q2ODTAp3RXV2_idQ">xam8</a></td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center">66.0% | 73.9%</td>
+      <td align="center"><a href="https://pan.baidu.com/s/1BvhZIBXj9M-Ro9BLmI2lmg">nm9h</a> | <a href="https://pan.baidu.com/s/1lu7SYe3tLhp2v1kkI5fO9w">6mkf</a></td>
     </tr>
   </tbody>
 </table>
