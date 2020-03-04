@@ -34,14 +34,14 @@ if __name__ == '__main__':
     dist_matrix = torch.cdist(query_feature.unsqueeze(0).unsqueeze(0), gallery_features.unsqueeze(0)).squeeze()
     if data_name != 'isc':
         dist_matrix[query_index] = float('inf')
-    idx = dist_matrix.argsort(dim=-1, descending=False)
+    idx = dist_matrix.topk(k=retrieval_num, dim=-1, largest=False)[1]
 
     result_path = 'results/{}'.format(query_img_name.split('/')[-1].split('.')[0])
     if os.path.exists(result_path):
         shutil.rmtree(result_path)
     os.mkdir(result_path)
     query_image.save('{}/query_img.jpg'.format(result_path))
-    for num, index in enumerate(idx[:retrieval_num]):
+    for num, index in enumerate(idx):
         retrieval_image = Image.open(gallery_images[index.item()]).convert('RGB') \
             .resize((224, 224), resample=Image.BILINEAR)
         draw = ImageDraw.Draw(retrieval_image)

@@ -48,12 +48,12 @@ def test(net, recall_ids):
                 eval_dict[key]['features'].append(features)
             eval_dict[key]['features'] = torch.cat(eval_dict[key]['features'], dim=0)
 
-    # compute recall metric
-    if data_name == 'isc':
-        acc_list = recall(eval_dict['test']['features'], test_data_set.labels, recall_ids,
-                          eval_dict['gallery']['features'], gallery_data_set.labels)
-    else:
-        acc_list = recall(eval_dict['test']['features'], test_data_set.labels, recall_ids, chunks=data_name == 'sop')
+        # compute recall metric
+        if data_name == 'isc':
+            acc_list = recall(eval_dict['test']['features'], test_data_set.labels, recall_ids,
+                              eval_dict['gallery']['features'], gallery_data_set.labels)
+        else:
+            acc_list = recall(eval_dict['test']['features'], test_data_set.labels, recall_ids)
     desc = 'Test Epoch {}/{} '.format(epoch, num_epochs)
     for index, rank_id in enumerate(recall_ids):
         desc += 'R@{}:{:.2f}% '.format(rank_id, acc_list[index] * 100)

@@ -6,7 +6,6 @@ from torch.nn import functional as F
 from torch.utils.data import Dataset
 from torch.utils.data.sampler import Sampler
 from torchvision import transforms
-from tqdm import tqdm
 
 
 class ImageReader(Dataset):
@@ -38,21 +37,12 @@ class ImageReader(Dataset):
         return len(self.images)
 
 
-def recall(feature_vectors, feature_labels, rank, gallery_vectors=None, gallery_labels=None, chunks=False):
+def recall(feature_vectors, feature_labels, rank, gallery_vectors=None, gallery_labels=None):
     num_features = len(feature_labels)
     feature_labels = torch.tensor(feature_labels, device=feature_vectors.device)
     gallery_vectors = feature_vectors if gallery_vectors is None else gallery_vectors
 
-    if chunks:
-        # avoid OOM error
-        dist_matrix = []
-        for feature_vector in tqdm(torch.chunk(feature_vectors, chunks=2048, dim=0),
-                                   desc='compute distance matrix for each chunk'):
-            dist_matrix.append(torch.cdist(feature_vector.unsqueeze(0), gallery_vectors.unsqueeze(0)).squeeze(0))
-        # [N_f, N_g]
-        dist_matrix = torch.cat(dist_matrix, dim=0)
-    else:
-        dist_matrix = torch.cdist(feature_vectors.unsqueeze(0), gallery_vectors.unsqueeze(0)).squeeze(0)
+    dist_matrix = torch.cdist(feature_vectors.unsqueeze(0), gallery_vectors.unsqueeze(0)).squeeze(0)
 
     if gallery_labels is None:
         dist_matrix.fill_diagonal_(float('inf'))
@@ -60,7 +50,7 @@ def recall(feature_vectors, feature_labels, rank, gallery_vectors=None, gallery_
     else:
         gallery_labels = torch.tensor(gallery_labels, device=feature_vectors.device)
 
-    idx = dist_matrix.argsort(dim=-1, descending=False)
+    idx = dist_matrix.topk(k=rank[-1], dim=-1, largest=False)[1]
     acc_list = []
     for r in rank:
         correct = (gallery_labels[idx[:, 0:r]] == feature_labels.unsqueeze(dim=-1)).any(dim=-1).float()
