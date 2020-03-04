@@ -102,7 +102,7 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
       <td align="center">92.1% | 96.1%</td>
       <td align="center">95.6% | 97.8%</td>
       <td align="center">97.5% | 98.7%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1W3-QKVe5HpCAHJTgxI1M5Q">model</a>&nbsp;|&nbsp;r3sn | <a href="https://pan.baidu.com/s/171Wqa-1TNquzedjlFhaYGg">model</a>&nbsp;|&nbsp;sf5s</td>
+      <td align="center"><a href="https://pan.baidu.com/s/1W3-QKVe5HpCAHJTgxI1M5Q">r3sn</a> | <a href="https://pan.baidu.com/s/171Wqa-1TNquzedjlFhaYGg">sf5s</a></td>
     </tr>
     <tr>
       <td align="center">ResNeXt50(SG)</td>
@@ -110,7 +110,7 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
       <td align="center">92.0% | 95.4%</td>
       <td align="center">95.4% | 97.3%</td>
       <td align="center">97.6% | 98.6%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1pdp6ePxaxcvGbdlOz1Kmtg">model</a>&nbsp;|&nbsp;dsdx | <a href="https://pan.baidu.com/s/1_dpDM4FNkzPYPvmOsTTR1w">model</a>&nbsp;|&nbsp;fh72</td>
+      <td align="center"><a href="https://pan.baidu.com/s/1pdp6ePxaxcvGbdlOz1Kmtg">dsdx</a> | <a href="https://pan.baidu.com/s/1_dpDM4FNkzPYPvmOsTTR1w">fh72</a></td>
     </tr>
   </tbody>
 </table>
@@ -134,7 +134,7 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
       <td align="center">76.4% | 83.1%</td>
       <td align="center">84.8% | 89.6%</td>
       <td align="center">90.7% | 94.0%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1_Ij-bYHZC31cxEWUnYwqwQ">model</a>&nbsp;|&nbsp;2cfi | <a href="https://pan.baidu.com/s/1deaYb2RWHikztHHsbJyuNw">model</a>&nbsp;|&nbsp;pi4q</td>
+      <td align="center"><a href="https://pan.baidu.com/s/1_Ij-bYHZC31cxEWUnYwqwQ">2cfi</a> | <a href="https://pan.baidu.com/s/1deaYb2RWHikztHHsbJyuNw">pi4q</a></td>
     </tr>
     <tr>
       <td align="center">ResNeXt50(MG)</td>
@@ -142,7 +142,7 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
       <td align="center">76.3% | 82.6%</td>
       <td align="center">84.0% | 89.0%</td>
       <td align="center">90.1% | 93.3%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1BvhZIBXj9M-Ro9BLmI2lmg">model</a>&nbsp;|&nbsp;nm9h | <a href="https://pan.baidu.com/s/1lu7SYe3tLhp2v1kkI5fO9w">model</a>&nbsp;|&nbsp;6mkf</td>
+      <td align="center"><a href="https://pan.baidu.com/s/1BvhZIBXj9M-Ro9BLmI2lmg">nm9h</a> | <a href="https://pan.baidu.com/s/1lu7SYe3tLhp2v1kkI5fO9w">6mkf</a></td>
     </tr>
   </tbody>
 </table>
@@ -166,7 +166,7 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
       <td align="center">90.7%</td>
       <td align="center">93.9%</td>
       <td align="center">96.8%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1_xaiZKwHp3BAp0U1K1ImrQ">model</a>&nbsp;|&nbsp;vsps</td>
+      <td align="center"><a href="https://pan.baidu.com/s/1_xaiZKwHp3BAp0U1K1ImrQ">vsps</a></td>
     </tr>
     <tr>
       <td align="center">ResNeXt50(SG)</td>
@@ -174,7 +174,7 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
       <td align="center">93.2%</td>
       <td align="center">96.0%</td>
       <td align="center">98.1%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1HCzf6ROjePEyKWs-h3kDsA">model</a>&nbsp;|&nbsp;8588</td>
+      <td align="center"><a href="https://pan.baidu.com/s/1HCzf6ROjePEyKWs-h3kDsA">8588</a></td>
     </tr>
   </tbody>
 </table>
@@ -202,7 +202,7 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
       <td align="center">96.1%</td>
       <td align="center">96.7%</td>
       <td align="center">97.0%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1yqwTTiGKWnZfkoSZs1LuvQ">model</a>&nbsp;|&nbsp;6dh2</td>
+      <td align="center"><a href="https://pan.baidu.com/s/1yqwTTiGKWnZfkoSZs1LuvQ">6dh2</a></td>
     </tr>
     <tr>
       <td align="center">ResNeXt50(GS)</td>
@@ -212,7 +212,7 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
       <td align="center">98.1%</td>
       <td align="center">98.4%</td>
       <td align="center">98.6%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1Kf0Tq_q2ODTAp3RXV2_idQ">model</a>&nbsp;|&nbsp;xam8</td>
+      <td align="center"><a href="https://pan.baidu.com/s/1Kf0Tq_q2ODTAp3RXV2_idQ">xam8</a></td>
     </tr>
   </tbody>
 </table>
