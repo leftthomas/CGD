@@ -45,8 +45,8 @@ optional arguments:
 ```
 python test.py --retrieval_num 10
 optional arguments:
---query_img_name              query image name [default value is 'data/car/uncropped/008055.jpg']
---data_base                   queried database [default value is 'car_uncropped_resnet50_data_base.pth']
+--query_img_name              query image name [default value is '/home/data/car/uncropped/008055.jpg']
+--data_base                   queried database [default value is 'car_uncropped_resnet50_SG_1536_0.1_0.5_0.1_128_data_base.pth']
 --retrieval_num               retrieval number [default value is 8]
 ```
 
@@ -196,23 +196,23 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
   <tbody>
     <tr>
       <td align="center">ResNet50(GS)</td>
-      <td align="center">66.0%</td>
-      <td align="center">66.0%</td>
-      <td align="center">66.0%</td>
-      <td align="center">66.0%</td>
-      <td align="center">66.0%</td>
-      <td align="center">66.0%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1BvhZIBXj9M-Ro9BLmI2lmg">nm9h</a></td>
+      <td align="center">83.6%</td>
+      <td align="center">95.7%</td>
+      <td align="center">97.1%</td>
+      <td align="center">97.7%</td>
+      <td align="center">98.1%</td>
+      <td align="center">98.4%</td>
+      <td align="center"><a href="https://pan.baidu.com/s/10Ow0JhXzRcPVsv5-j14ZjQ">8jmp</a></td>
     </tr>
     <tr>
       <td align="center">ResNeXt50(GS)</td>
-      <td align="center">66.0%</td>
-      <td align="center">66.0%</td>
-      <td align="center">66.0%</td>
-      <td align="center">66.0%</td>
-      <td align="center">66.0%</td>
-      <td align="center">66.0%</td>
-      <td align="center"><a href="https://pan.baidu.com/s/1BvhZIBXj9M-Ro9BLmI2lmg">nm9h</a></td>
+      <td align="center">85.0%</td>
+      <td align="center">96.1%</td>
+      <td align="center">97.3%</td>
+      <td align="center">97.9%</td>
+      <td align="center">98.2%</td>
+      <td align="center">98.4%</td>
+      <td align="center"><a href="https://pan.baidu.com/s/1eCt_IjLYSccnCrBk5XRjTQ">wdq5</a></td>
     </tr>
   </tbody>
 </table>
