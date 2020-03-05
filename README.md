@@ -162,18 +162,18 @@ the learning rate is decayed by 10 on 12th and 16th epoch.
   <tbody>
     <tr>
       <td align="center">ResNet50(SG)</td>
-      <td align="center">66.0%</td>
-      <td align="center">66.0%</td>
-      <td align="center">66.0%</td>
-      <td align="center">66.0%</td>
+      <td align="center">79.3%</td>
+      <td align="center">90.6%</td>
+      <td align="center">95.8%</td>
+      <td align="center">98.6%</td>
       <td align="center"><a href="https://pan.baidu.com/s/17I2nQMK5XBXL1XhiZ2elAg">qgsn</a></td>
     </tr>
     <tr>
       <td align="center">ResNeXt50(SG)</td>
-      <td align="center">66.0%</td>
-      <td align="center">66.0%</td>
-      <td align="center">66.0%</td>
-      <td align="center">66.0%</td>
+      <td align="center">71.0%</td>
+      <td align="center">85.3%</td>
+      <td align="center">93.5%</td>
+      <td align="center">97.9%</td>
       <td align="center"><a href="https://pan.baidu.com/s/1rAGMchtLNTdQQxDWD6ruOg">uexd</a></td>
     </tr>
   </tbody>
