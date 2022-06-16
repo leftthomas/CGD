@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from PIL import Image
+from collections import namedtuple
 from torch import nn
 from torch.nn import functional as F
 from torch.utils.data import Dataset
@@ -8,8 +9,14 @@ from torch.utils.data.sampler import Sampler
 from torchvision import transforms
 
 
-class ImageReader(Dataset):
+def convert_dict_to_tuple(dictionary):
+    for key, value in dictionary.items():
+        if isinstance(value, dict):
+            dictionary[key] = convert_dict_to_tuple(value)
+    return namedtuple('GenericDict', dictionary.keys())(**dictionary)
 
+
+class ImageReader(Dataset):
     def __init__(self, data_path, data_name, data_type, crop_type):
         if crop_type == 'cropped' and data_name not in ['car', 'cub']:
             raise NotImplementedError('cropped data only works for car or cub dataset')
