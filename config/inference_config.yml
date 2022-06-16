@@ -1,0 +1,8 @@
+root: '/mnt/data-01/public_test/images/'
+test_list: '/mnt/data-01/public_test/images_w_boxes.csv'
+pairs_list: '/mnt/data-01/public_test/submission_list.csv'
+batch_size: 256
+augmentations: 'default'
+augmentations_valid: 'default'
+num_workers: 16
+
