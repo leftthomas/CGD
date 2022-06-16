@@ -19,10 +19,6 @@ from model import Model
 
 
 def main(args: argparse.Namespace) -> None:
-    backbone_type = args.backbone_type
-    gd_config = args.gd_config
-    feature_dim = args.feature_dim
-    
     with open(args.exp_cfg) as f:
         data = yaml.safe_load(f)
     exp_cfg = convert_dict_to_tuple(data)
@@ -33,14 +29,7 @@ def main(args: argparse.Namespace) -> None:
 
     # getting model and checkpoint
     print('Creating model and loading checkpoint')
-    #model = Model(backbone_type, gd_config, feature_dim, num_classes=1716)
-    #model.load_state_dict(torch.load(args.checkpoint_path))
     model = torch.load(args.checkpoint_path, map_location='cuda')
-    #new_state_dict = OrderedDict()
-    #for k, v in checkpoint.items():
-    #    name = k.replace("module.", "")
-    #    new_state_dict[name] = v
-    #model.load_state_dict(new_state_dict)
     model.eval()
     model.cuda()
     print('Weights are loaded')
@@ -107,12 +96,6 @@ def parse_arguments(argv):
                         type=str,
                         default='config/inference_config.yml',
                         help='Path to inference config file.')
-    parser.add_argument('--backbone_type', default='resnet50', type=str, choices=['resnet50', 'resnext50'],
-                        help='backbone network type')
-    parser.add_argument('--gd_config', default='SG', type=str,
-                        choices=['S', 'M', 'G', 'SM', 'MS', 'SG', 'GS', 'MG', 'GM', 'SMG', 'MSG', 'GSM'],
-                        help='global descriptors config')
-    parser.add_argument('--feature_dim', default=1536, type=int, help='feature dim')
     return parser.parse_args(argv)
 
 
