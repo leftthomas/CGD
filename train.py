@@ -140,5 +140,6 @@ if __name__ == '__main__':
                 data_base['gallery_images'] = gallery_data_set.images
                 data_base['gallery_labels'] = gallery_data_set.labels
                 data_base['gallery_features'] = eval_dict['gallery']['features']
-            torch.save(model.state_dict(), 'results/{}_model.pth'.format(save_name_pre))
+            torch.save(model, 'results/{}_model.pth'.format(save_name_pre))
             torch.save(data_base, 'results/{}_data_base.pth'.format(save_name_pre))
+

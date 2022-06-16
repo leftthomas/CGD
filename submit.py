@@ -33,14 +33,14 @@ def main(args: argparse.Namespace) -> None:
 
     # getting model and checkpoint
     print('Creating model and loading checkpoint')
-    model = Model(backbone_type, gd_config, feature_dim, num_classes=1716)
+    #model = Model(backbone_type, gd_config, feature_dim, num_classes=1716)
     #model.load_state_dict(torch.load(args.checkpoint_path))
-    checkpoint = torch.load(args.checkpoint_path, map_location='cuda')['state_dict']
-    new_state_dict = OrderedDict()
-    for k, v in checkpoint.items():
-        name = k.replace("module.", "")
-        new_state_dict[name] = v
-    model.load_state_dict(new_state_dict)
+    model = torch.load(args.checkpoint_path, map_location='cuda')
+    #new_state_dict = OrderedDict()
+    #for k, v in checkpoint.items():
+    #    name = k.replace("module.", "")
+    #    new_state_dict[name] = v
+    #model.load_state_dict(new_state_dict)
     model.eval()
     model.cuda()
     print('Weights are loaded')
