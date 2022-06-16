@@ -7,6 +7,43 @@ from torch.nn import functional as F
 from torch.utils.data import Dataset
 from torch.utils.data.sampler import Sampler
 from torchvision import transforms
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
+
+
+train_transform = A.Compose([
+        A.Resize(always_apply=False, p=1.0, height=252, width=252, interpolation=0),
+        A.RandomCrop(always_apply=False, p=1.0, height=224, width=224),
+        A.Flip(),
+        A.Transpose(),
+        A.ElasticTransform(p=0.2),
+        A.OneOf([
+            A.GaussNoise(),
+            A.ISONoise()
+        ], p=0.2),
+        A.CoarseDropout(always_apply=False, p=0.2, max_holes=25, max_height=20, max_width=20, min_holes=10, min_height=8, min_width=8),
+        A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=30, p=0.6),
+        A.OneOf([
+            A.OpticalDistortion(p=0.3),
+            A.GridDistortion(p=.1),
+        ], p=0.2),
+        A.OneOf([
+            A.CLAHE(clip_limit=2),
+            A.RandomBrightnessContrast(),
+            A.RandomGamma(always_apply=False, p=1.0, gamma_limit=(57, 160), eps=1e-07)            
+        ], p=0.3),
+        A.HueSaturationValue(p=0.3),
+        A.OneOf([
+            A.RGBShift(),
+            A.ChannelDropout(),
+            A.ChannelShuffle(),
+            A.Equalize(),
+            A.HueSaturationValue(),
+            A.InvertImg()
+        ], p=0.8),
+        A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+        ToTensorV2()
+    ])
 
 
 def convert_dict_to_tuple(dictionary):
@@ -25,8 +62,9 @@ class ImageReader(Dataset):
         self.class_to_idx = dict(zip(sorted(data_dict), range(len(data_dict))))
         normalize = transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         if data_type == 'train':
-            self.transform = transforms.Compose([transforms.Resize((252, 252)), transforms.RandomCrop(224),
-                                                 transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize])
+            self.transform = train_transform
+            #self.transform = transforms.Compose([transforms.Resize((252, 252)), transforms.RandomCrop(224),
+            #                                     transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize])
         else:
             self.transform = transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor(), normalize])
         self.images, self.labels = [], []
@@ -37,7 +75,7 @@ class ImageReader(Dataset):
     def __getitem__(self, index):
         path, target = self.images[index], self.labels[index]
         img = Image.open(path).convert('RGB')
-        img = self.transform(img)
+        img = self.transform(image=image)["image"]
         return img, target
 
     def __len__(self):
